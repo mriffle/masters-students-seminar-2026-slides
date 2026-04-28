@@ -177,6 +177,32 @@ const Cover: React.FC<SlideProps> = () => {
             Senior Research Scientist
           </p>
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.25, duration: 0.6 }}
+          className="mt-8 flex flex-col items-center gap-1.5 font-mono"
+        >
+          <a
+            href="https://www.linkedin.com/in/mikeriffle/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm md:text-base tracking-wide transition-colors hover:opacity-90"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            https://www.linkedin.com/in/mikeriffle/
+          </a>
+          <a
+            href="https://github.com/mriffle/masters-students-seminar-2026-slides"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm md:text-base tracking-wide transition-colors hover:opacity-90"
+            style={{ color: 'var(--color-secondary)' }}
+          >
+            https://github.com/mriffle/masters-students-seminar-2026-slides
+          </a>
+        </motion.div>
       </div>
     </SlideContainer>
   );
