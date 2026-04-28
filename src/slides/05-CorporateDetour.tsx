@@ -13,68 +13,82 @@ import type { SlideProps } from '../types';
  * it as the weakest part of the biography."
  *
  * Three load-bearing verbatim quotes:
- *   1. (centerpiece pull-quote, top of slide):
+ *   1. Pull-quote (top of slide):
  *        "I asked for a promotion, was told that's not how they do things
  *         here, so I quit and started my own company."
- *   2. (Corporate-branch friction node):
+ *   2. Corporate-row friction node:
  *        "felt so fake and superficial"
- *   3. (Entrepreneurship-branch friction node):
+ *   3. Entrepreneurship-row friction node:
  *        "I'm not an entrepreneur. I don't think like one."
  *
- * Visual concept:
- *   - The promotion-quit pull-quote sits beneath the title at wordmark-ish
- *     scale -- a moment of agency from the speaker.
- *   - Below the quote, a path diagram shows two side-by-side abandoned
- *     branches and a third forward branch:
+ * Visual concept (SEQUENTIAL, not parallel):
+ *   The three phases are stacked vertically as three horizontal rows --
+ *   Corporate, then Entrepreneurship, then the forward "?" path. Each row
+ *   reads left-to-right; curving connectors between rows show the temporal
+ *   sequence (this phase dead-ended, then the next phase started, that one
+ *   also dead-ended, then the forward path opened).
  *
- *       (origin) -+--dashed (--color-danger tinted, fading to muted)-->  [Corporate]    X
- *                 |                                                       "felt so fake and superficial"
- *                 |
- *                 +--dashed (--color-danger tinted, fading to muted)-->  [Entrepreneurship]   X
- *                 |                                                       "I'm not an entrepreneur. I don't think like one."
- *                 |
- *                 +-----solid, glowing --color-primary----------->   ?    (off-screen right; foreshadow)
+ *       (origin) =====thick dashed danger=====> [Corporate] -----> X
+ *           "Left UW before graduating"          "felt so fake and superficial"
+ *                                                                            \
+ *                                                                       (curving connector,
+ *                                                                        danger-tinted)
+ *                                                                              v
+ *       (origin) =====thick dashed danger=====> [Entrepreneurship] -> X
+ *           "Back at UW; finished degree in       "I'm not an entrepreneur.
+ *            Cellular & Molecular Biology"          I don't think like one."
+ *                                                                            \
+ *                                                                       (connector fades
+ *                                                                        from danger -> primary)
+ *                                                                              v
+ *       (origin) =====thick solid primary=====> ?   --dashed-->  (off-screen, foreshadow)
  *
- *     Both abandoned branches terminate in a small X mark. The forward
- *     "?" branch glows in primary and exits the right edge of the
- *     viewBox, foreshadowing slide 06 (Back to Science).
- *   - One-line lesson caption at the bottom:
- *       "good at this" and "want to do this every day" are different questions.
+ *   The biographical context for each dead-end phase appears as an italic
+ *   muted annotation above its path: "Left UW before graduating" labels the
+ *   entry into the Corporate phase; "Back at UW; finished degree in
+ *   Cellular & Molecular Biology" labels the entry into the Entrepreneurship
+ *   phase (returning to UW happened DURING the entrepreneurship years -- the
+ *   self-employment provided the schedule flexibility to finish the degree).
+ *
+ *   Connector between rows 1 and 2 stays danger-tinted (still in the
+ *   "didn't fit" era). Connector between rows 2 and 3 fades from danger
+ *   through muted to primary -- a visible color shift that signals the next
+ *   chapter is different in kind, foreshadowing slide 06.
+ *
+ * Line widths are deliberately heavy throughout (6 for main paths, 5 for
+ * continuations, 6 for forward, 4 for connectors) so the path topology
+ * reads from across the room.
  *
  * Motif continuity (slides 03 -> 04 -> 05):
  *   - Same node grammar: small filled circle with a higher-opacity stroked
- *     ring, inner accent dot, italic muted annotations beneath.
+ *     ring, inner accent dot, italic muted annotations beneath/around.
  *   - Same defs/glow filter pattern (Gaussian blur + feMerge) for the
  *     pursued-path node.
  *   - Same italic muted text style for trajectory annotations.
  *   - Pursued path remains solid --color-primary; abandoned branches are
- *     dashed and de-saturated (slide 03 used --color-text-muted dashed; this
- *     slide tints those dashed branches with --color-danger because the
- *     content has shifted from "abandoned plan" to "actively did not fit").
+ *     thick dashed and danger-gradient.
  *
  * --color-danger establishment (FIRST APPEARANCE in the deck):
  *   This is the first slide to introduce --color-danger. The deck-wide
  *   semantic is "dead ends, what AI gets wrong, friction" and this slide
  *   sets the visual register that slides 19, 26, and 29 will rhyme back to.
  *   The treatment chosen here:
- *     - Strokes drawn at strokeOpacity ~0.4-0.55 (NOT loud red).
- *     - Strokes are dashed (8 8) to read as "abandoned trajectory."
- *     - The danger color FADES into --color-text-muted as the branch
- *       terminates -- implemented as a linearGradient stop from
- *       var(--color-danger) at the origin to var(--color-text-muted) at
- *       the dead-end terminator. This is the "fading to muted" effect the
- *       brief calls for.
+ *     - Strokes drawn at 0.45-0.7 stop opacity (NOT loud red).
+ *     - Strokes are thick dashed (12 12 / 10 14) to read as "abandoned
+ *       trajectory you can see the shape of."
+ *     - The danger color FADES into --color-text-muted as each branch
+ *       terminates -- linearGradient stops from danger at the origin to
+ *       muted at the dead-end terminator.
  *     - Friction-phrase text on those branches is rendered in --color-danger
  *       at fillOpacity ~0.85 (legible but not blaring).
  *     - The terminator X is drawn in --color-danger at strokeOpacity 0.7.
  *   Net: danger is present and meaningful, but tinted -- the audience reads
  *   "these were dead ends" without the slide shouting. Later slides 19, 26,
- *   29 should use a similar restrained register (low-to-moderate opacity,
- *   dashed for branches, X-mark or fade-out for terminators).
+ *   29 should use a similar restrained register.
  *
  * Color budget (3 accent max):
  *   - --color-primary    -> the forward "?" path (foreshadow into slide 06).
- *   - --color-danger     -> the two abandoned branches and their friction
+ *   - --color-danger     -> the two abandoned phase paths and their friction
  *                            phrase text. First appearance in the deck.
  *   - --color-text-muted -> annotations, branch fade-out, lesson caption.
  *   The pull-quote uses --color-text (primary text -- not counted as an
@@ -137,9 +151,9 @@ const CorporateDetour: React.FC<SlideProps> = () => {
           </blockquote>
         </motion.div>
 
-        {/* Path diagram: two abandoned branches + forward "?" branch. */}
+        {/* Path diagram: three sequential phases. */}
         <motion.div
-          className="w-full max-w-[88vw] h-[44vh]"
+          className="w-full max-w-[90vw] h-[52vh]"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.95, duration: 0.65 }}
@@ -156,7 +170,7 @@ const CorporateDetour: React.FC<SlideProps> = () => {
           }}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 0.9, y: 0 }}
-          transition={{ delay: 2.4, duration: 0.6 }}
+          transition={{ delay: 5.0, duration: 0.6 }}
         >
           <span style={{ color: 'var(--color-text)', opacity: 0.85 }}>
             &ldquo;good at this&rdquo;
@@ -173,44 +187,45 @@ const CorporateDetour: React.FC<SlideProps> = () => {
 };
 
 // ---------------------------------------------------------------------------
-// Path branches diagram
+// Path branches diagram -- THREE SEQUENTIAL PHASES
 // ---------------------------------------------------------------------------
 //
-// viewBox 1000 x 480.
-// Origin sits at left-upper; the two dashed dead-end branches fan out near
-// the top half, and the forward "?" path lives in the bottom region --
-// "Below, a third path -- solid, glowing -- labeled simply '?' leading
-// off-screen toward the next slide" (SLIDES.md slide 05).
+// viewBox 1000 x 540.
 //
-//   (origin) --dashed danger->muted--> [Corporate]        X
-//            --dashed danger->muted--> [Entrepreneurship] X
+// Three horizontal rows stacked vertically. Each row is one phase:
+//   Row 1 (y=90):  Corporate          --> dead-end X
+//   Row 2 (y=290): Entrepreneurship   --> dead-end X
+//   Row 3 (y=480): Forward "?"        --> off-screen (foreshadow into slide 06)
 //
-//            --solid, glowing primary----------------->  ?   --> (off-screen)
+// Curving bezier connectors between rows carry the "and then..." beat.
+// Connector 1 stays danger-tinted (still in the didn't-fit era); connector
+// 2 fades from danger through muted to primary, signaling the qualitative
+// shift into the next chapter.
 //
-// Placing the forward path beneath both dead-ends gives it the foreshadowing
-// "what's next" reading -- the audience's eye lands on it last, and it
-// physically occupies the otherwise-empty bottom band of the slide.
+// Line widths are deliberately heavy: 6 for main dashed paths, 5 for the
+// short continuations to the X, 6 for the forward primary path, 4 for the
+// inter-row connectors. The original treatment used 2 px which read as
+// hairline -- this version reads from across the room.
 const PathBranches: React.FC = () => {
-  const ORIGIN = { x: 90, y: 160 };
+  const ORIGIN_X = 110;
+  const NODE_X = 480;
+  const END_X = 700; // X-mark terminator for dead-end rows
+  const Q_X = 700; // "?" node x in the forward row
+  const TAIL_X = 1000; // off-screen continuation tail for forward row
 
-  // Corporate branch: upper dead-end.
-  const CORP = { x: 600, y: 80 };
-  const CORP_END = { x: 760, y: 80 }; // X-mark terminator
+  const CORP_Y = 90;
+  const ENT_Y = 290;
+  const FWD_Y = 480;
 
-  // Entrepreneurship branch: lower dead-end (still in upper half of the SVG).
-  const ENT = { x: 600, y: 240 };
-  const ENT_END = { x: 760, y: 240 };
-
-  // Forward "?" path: bottom band of the SVG, exits right off-screen.
-  const FWD_ORIGIN = { x: 90, y: 380 };
-  const Q = { x: 720, y: 380 };
-  const FORWARD_TAIL = { x: 1000, y: 380 };
+  // Vertical mid-points used as bezier control points for inter-row connectors.
+  const MID_1 = (CORP_Y + ENT_Y) / 2;
+  const MID_2 = (ENT_Y + FWD_Y) / 2;
 
   return (
     <svg
-      viewBox="0 0 1000 480"
+      viewBox="0 0 1000 540"
       className="w-full h-full"
-      aria-label="Two abandoned paths (Corporate, Entrepreneurship) and a third forward path leading off-screen."
+      aria-label="Three sequential phases: Corporate dead-ends, then Entrepreneurship begins (with the speaker returning to UW to finish a Cellular & Molecular Biology degree) and dead-ends, then a forward question-mark path begins, leading off-screen."
     >
       <defs>
         {/* Glow filter for the forward "?" node and path -- matches the
@@ -223,223 +238,377 @@ const PathBranches: React.FC = () => {
           </feMerge>
         </filter>
 
-        {/* Linear gradient: --color-danger fading to --color-text-muted along
-            each abandoned branch. This is the deck-establishing treatment for
-            "tinted, low-opacity, fading dead-end" that slides 19, 26, 29 will
-            rhyme back to. Two gradients (one per branch) so they share the
-            same axis as their respective lines without distortion. */}
+        {/* Linear gradients for each abandoned-phase row: danger at the
+            origin fading into muted at the X-mark terminator. Same axis as
+            the path so the gradient direction matches the visual flow. */}
         <linearGradient
           id="detour-fade-corp"
           gradientUnits="userSpaceOnUse"
-          x1={ORIGIN.x}
-          y1={ORIGIN.y}
-          x2={CORP_END.x}
-          y2={CORP_END.y}
+          x1={ORIGIN_X}
+          y1={CORP_Y}
+          x2={END_X}
+          y2={CORP_Y}
         >
-          <stop offset="0%" stopColor="var(--color-danger)" stopOpacity="0.55" />
-          <stop offset="60%" stopColor="var(--color-danger)" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="var(--color-text-muted)" stopOpacity="0.35" />
+          <stop offset="0%" stopColor="var(--color-danger)" stopOpacity="0.7" />
+          <stop offset="60%" stopColor="var(--color-danger)" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="var(--color-text-muted)" stopOpacity="0.45" />
         </linearGradient>
         <linearGradient
           id="detour-fade-ent"
           gradientUnits="userSpaceOnUse"
-          x1={ORIGIN.x}
-          y1={ORIGIN.y}
-          x2={ENT_END.x}
-          y2={ENT_END.y}
+          x1={ORIGIN_X}
+          y1={ENT_Y}
+          x2={END_X}
+          y2={ENT_Y}
+        >
+          <stop offset="0%" stopColor="var(--color-danger)" stopOpacity="0.7" />
+          <stop offset="60%" stopColor="var(--color-danger)" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="var(--color-text-muted)" stopOpacity="0.45" />
+        </linearGradient>
+
+        {/* Connector 1: Corporate dead-end -> Entrepreneurship origin.
+            Stays in the danger family (still the didn't-fit era). */}
+        <linearGradient
+          id="detour-connector-1"
+          gradientUnits="userSpaceOnUse"
+          x1={END_X}
+          y1={CORP_Y}
+          x2={ORIGIN_X}
+          y2={ENT_Y}
         >
           <stop offset="0%" stopColor="var(--color-danger)" stopOpacity="0.55" />
-          <stop offset="60%" stopColor="var(--color-danger)" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="var(--color-text-muted)" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="var(--color-danger)" stopOpacity="0.45" />
+        </linearGradient>
+
+        {/* Connector 2: Entrepreneurship dead-end -> Forward origin.
+            Fades from danger through muted to primary -- visible signal
+            that the next chapter is different in kind. */}
+        <linearGradient
+          id="detour-connector-2"
+          gradientUnits="userSpaceOnUse"
+          x1={END_X}
+          y1={ENT_Y}
+          x2={ORIGIN_X}
+          y2={FWD_Y}
+        >
+          <stop offset="0%" stopColor="var(--color-danger)" stopOpacity="0.55" />
+          <stop offset="55%" stopColor="var(--color-text-muted)" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0.65" />
         </linearGradient>
       </defs>
 
-      {/* Origin marker: small muted node where the three branches diverge. */}
+      {/* =================================================================
+          ROW 1 -- CORPORATE
+          ================================================================= */}
+
+      {/* Origin marker */}
       <motion.g
         initial={{ opacity: 0, scale: 0.7 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.05, duration: 0.45 }}
-        style={{ transformOrigin: `${ORIGIN.x}px ${ORIGIN.y}px` }}
+        style={{ transformOrigin: `${ORIGIN_X}px ${CORP_Y}px` }}
       >
         <circle
-          cx={ORIGIN.x}
-          cy={ORIGIN.y}
-          r={7}
+          cx={ORIGIN_X}
+          cy={CORP_Y}
+          r={10}
           fill="var(--color-bg-card)"
           stroke="var(--color-text-muted)"
-          strokeOpacity={0.6}
-          strokeWidth={1.5}
+          strokeOpacity={0.7}
+          strokeWidth={2.5}
         />
         <circle
-          cx={ORIGIN.x}
-          cy={ORIGIN.y}
-          r={2.5}
+          cx={ORIGIN_X}
+          cy={CORP_Y}
+          r={4}
           fill="var(--color-text-muted)"
           fillOpacity={0.85}
         />
       </motion.g>
 
-      {/* --- Corporate branch (dashed danger->muted, dead-end) --- */}
+      {/* Annotation above row 1 path: entry circumstance. */}
+      <motion.text
+        x={(ORIGIN_X + NODE_X) / 2}
+        y={CORP_Y - 22}
+        textAnchor="middle"
+        fill="var(--color-text-muted)"
+        fillOpacity={0.85}
+        fontSize={14}
+        fontStyle="italic"
+        letterSpacing={0.4}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.85 }}
+        transition={{ delay: 0.5, duration: 0.4 }}
+      >
+        Left UW before graduating
+      </motion.text>
+
+      {/* Corporate path: thick dashed danger, origin -> node */}
       <motion.path
-        d={`M ${ORIGIN.x} ${ORIGIN.y} C ${ORIGIN.x + 220} ${ORIGIN.y}, ${CORP.x - 200} ${CORP.y}, ${CORP.x} ${CORP.y}`}
+        d={`M ${ORIGIN_X} ${CORP_Y} L ${NODE_X} ${CORP_Y}`}
         fill="none"
         stroke="url(#detour-fade-corp)"
-        strokeWidth={2}
-        strokeDasharray="8 8"
+        strokeWidth={6}
+        strokeDasharray="12 12"
+        strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0 }}
         animate={{ pathLength: 1, opacity: 1 }}
         transition={{ delay: 0.35, duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
       />
-      {/* Corporate branch continuation past the node, fading to the X */}
+
+      {/* Continuation past the Corporate node, fading toward the X */}
       <motion.line
-        x1={CORP.x}
-        y1={CORP.y}
-        x2={CORP_END.x - 10}
-        y2={CORP_END.y}
+        x1={NODE_X}
+        y1={CORP_Y}
+        x2={END_X - 14}
+        y2={CORP_Y}
         stroke="url(#detour-fade-corp)"
-        strokeWidth={1.8}
-        strokeDasharray="6 8"
+        strokeWidth={5}
+        strokeDasharray="10 14"
+        strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0 }}
         animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ delay: 1.1, duration: 0.5 }}
+        transition={{ delay: 1.05, duration: 0.5 }}
       />
-      <DeadEndX cx={CORP_END.x} cy={CORP_END.y} delay={1.55} />
+      <DeadEndX cx={END_X} cy={CORP_Y} delay={1.45} />
 
-      {/* Corporate node */}
+      {/* Corporate node + label + friction quote (label/friction below) */}
       <BranchNode
-        cx={CORP.x}
-        cy={CORP.y}
+        cx={NODE_X}
+        cy={CORP_Y}
         label="Corporate"
-        friction={"“felt so fake and superficial”"}
-        delay={0.95}
-        labelAbove
-      />
-
-      {/* --- Entrepreneurship branch (dashed danger->muted, dead-end) --- */}
-      <motion.path
-        d={`M ${ORIGIN.x} ${ORIGIN.y} C ${ORIGIN.x + 220} ${ORIGIN.y}, ${ENT.x - 200} ${ENT.y}, ${ENT.x} ${ENT.y}`}
-        fill="none"
-        stroke="url(#detour-fade-ent)"
-        strokeWidth={2}
-        strokeDasharray="8 8"
-        initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ delay: 0.55, duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
-      />
-      <motion.line
-        x1={ENT.x}
-        y1={ENT.y}
-        x2={ENT_END.x - 10}
-        y2={ENT_END.y}
-        stroke="url(#detour-fade-ent)"
-        strokeWidth={1.8}
-        strokeDasharray="6 8"
-        initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ delay: 1.3, duration: 0.5 }}
-      />
-      <DeadEndX cx={ENT_END.x} cy={ENT_END.y} delay={1.75} />
-
-      {/* Entrepreneurship node */}
-      <BranchNode
-        cx={ENT.x}
-        cy={ENT.y}
-        label="Entrepreneurship"
-        friction={"“I’m not an entrepreneur. I don’t think like one.”"}
-        delay={1.15}
+        friction={'“felt so fake and superficial”'}
+        delay={0.9}
         labelAbove={false}
       />
 
-      {/* --- Forward "?" path: bottom band, solid+glowing primary, exits right.
-          Lives in the bottom region of the SVG so it physically reads as
-          "what's next" beneath the two abandoned branches above. --- */}
+      {/* =================================================================
+          CONNECTOR 1 -- Corporate dead-end -> Entrepreneurship origin
+          ================================================================= */}
+      <motion.path
+        d={`M ${END_X} ${CORP_Y + 22} C ${END_X} ${MID_1}, ${ORIGIN_X} ${MID_1}, ${ORIGIN_X} ${ENT_Y - 22}`}
+        fill="none"
+        stroke="url(#detour-connector-1)"
+        strokeWidth={4}
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ delay: 1.7, duration: 0.75, ease: [0.4, 0, 0.2, 1] }}
+      />
+      {/* Small chevron arrow at the connector tail, pointing down toward
+          the row-2 origin so the temporal direction reads clearly. */}
+      <motion.polygon
+        points={`${ORIGIN_X - 7},${ENT_Y - 22 - 9} ${ORIGIN_X + 7},${ENT_Y - 22 - 9} ${ORIGIN_X},${ENT_Y - 22}`}
+        fill="var(--color-danger)"
+        fillOpacity={0.55}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.55 }}
+        transition={{ delay: 2.4, duration: 0.35 }}
+      />
 
-      {/* Small forward-path origin marker so the line has a visible start. */}
+      {/* =================================================================
+          ROW 2 -- ENTREPRENEURSHIP
+          ================================================================= */}
+
+      {/* Origin marker */}
       <motion.g
         initial={{ opacity: 0, scale: 0.7 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1.85, duration: 0.4 }}
-        style={{ transformOrigin: `${FWD_ORIGIN.x}px ${FWD_ORIGIN.y}px` }}
+        transition={{ delay: 2.45, duration: 0.4 }}
+        style={{ transformOrigin: `${ORIGIN_X}px ${ENT_Y}px` }}
       >
         <circle
-          cx={FWD_ORIGIN.x}
-          cy={FWD_ORIGIN.y}
-          r={6}
+          cx={ORIGIN_X}
+          cy={ENT_Y}
+          r={10}
+          fill="var(--color-bg-card)"
+          stroke="var(--color-text-muted)"
+          strokeOpacity={0.7}
+          strokeWidth={2.5}
+        />
+        <circle
+          cx={ORIGIN_X}
+          cy={ENT_Y}
+          r={4}
+          fill="var(--color-text-muted)"
+          fillOpacity={0.85}
+        />
+      </motion.g>
+
+      {/* Annotation above row 2 path: returning to UW happened during this
+          phase -- self-employment provided the schedule flexibility. */}
+      <motion.text
+        x={(ORIGIN_X + NODE_X) / 2}
+        y={ENT_Y - 22}
+        textAnchor="middle"
+        fill="var(--color-text-muted)"
+        fillOpacity={0.85}
+        fontSize={14}
+        fontStyle="italic"
+        letterSpacing={0.4}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.85 }}
+        transition={{ delay: 2.7, duration: 0.4 }}
+      >
+        Back at UW &middot; finished degree in Cellular &amp; Molecular Biology
+      </motion.text>
+
+      {/* Entrepreneurship path: thick dashed danger, origin -> node */}
+      <motion.path
+        d={`M ${ORIGIN_X} ${ENT_Y} L ${NODE_X} ${ENT_Y}`}
+        fill="none"
+        stroke="url(#detour-fade-ent)"
+        strokeWidth={6}
+        strokeDasharray="12 12"
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ delay: 2.55, duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
+      />
+
+      {/* Continuation past the Entrepreneurship node, fading toward the X */}
+      <motion.line
+        x1={NODE_X}
+        y1={ENT_Y}
+        x2={END_X - 14}
+        y2={ENT_Y}
+        stroke="url(#detour-fade-ent)"
+        strokeWidth={5}
+        strokeDasharray="10 14"
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ delay: 3.25, duration: 0.5 }}
+      />
+      <DeadEndX cx={END_X} cy={ENT_Y} delay={3.65} />
+
+      {/* Entrepreneurship node + label + friction quote */}
+      <BranchNode
+        cx={NODE_X}
+        cy={ENT_Y}
+        label="Entrepreneurship"
+        friction={'“I’m not an entrepreneur. I don’t think like one.”'}
+        delay={3.1}
+        labelAbove={false}
+      />
+
+      {/* =================================================================
+          CONNECTOR 2 -- Entrepreneurship dead-end -> Forward origin
+          (fades from danger through muted to primary)
+          ================================================================= */}
+      <motion.path
+        d={`M ${END_X} ${ENT_Y + 22} C ${END_X} ${MID_2}, ${ORIGIN_X} ${MID_2}, ${ORIGIN_X} ${FWD_Y - 22}`}
+        fill="none"
+        stroke="url(#detour-connector-2)"
+        strokeWidth={4}
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ delay: 3.85, duration: 0.75, ease: [0.4, 0, 0.2, 1] }}
+      />
+      <motion.polygon
+        points={`${ORIGIN_X - 7},${FWD_Y - 22 - 9} ${ORIGIN_X + 7},${FWD_Y - 22 - 9} ${ORIGIN_X},${FWD_Y - 22}`}
+        fill="var(--color-primary)"
+        fillOpacity={0.7}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.7 }}
+        transition={{ delay: 4.55, duration: 0.35 }}
+      />
+
+      {/* =================================================================
+          ROW 3 -- FORWARD "?"  (foreshadow into slide 06)
+          ================================================================= */}
+
+      {/* Forward origin marker -- glowing primary so the eye registers the
+          qualitative shift. */}
+      <motion.g
+        initial={{ opacity: 0, scale: 0.7 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 4.6, duration: 0.4 }}
+        style={{ transformOrigin: `${ORIGIN_X}px ${FWD_Y}px` }}
+      >
+        <circle
+          cx={ORIGIN_X}
+          cy={FWD_Y}
+          r={9}
           fill="var(--color-bg-card)"
           stroke="var(--color-primary)"
-          strokeOpacity={0.7}
-          strokeWidth={1.6}
+          strokeOpacity={0.85}
+          strokeWidth={2.6}
           filter="url(#detour-primary-glow)"
         />
         <circle
-          cx={FWD_ORIGIN.x}
-          cy={FWD_ORIGIN.y}
-          r={2.2}
+          cx={ORIGIN_X}
+          cy={FWD_Y}
+          r={3.5}
           fill="var(--color-primary)"
           fillOpacity={0.95}
         />
       </motion.g>
 
+      {/* Forward path: thick solid glowing primary */}
       <motion.line
-        x1={FWD_ORIGIN.x}
-        y1={FWD_ORIGIN.y}
-        x2={Q.x}
-        y2={Q.y}
+        x1={ORIGIN_X}
+        y1={FWD_Y}
+        x2={Q_X}
+        y2={FWD_Y}
         stroke="var(--color-primary)"
-        strokeOpacity={0.7}
-        strokeWidth={2.2}
+        strokeOpacity={0.8}
+        strokeWidth={6}
+        strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.7 }}
-        transition={{ delay: 1.95, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+        animate={{ pathLength: 1, opacity: 0.8 }}
+        transition={{ delay: 4.75, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
         filter="url(#detour-primary-glow)"
       />
-      {/* Continuation off-screen right */}
+
+      {/* Continuation off-screen right -- thick dashed primary, with arrowhead. */}
       <motion.line
-        x1={Q.x}
-        y1={Q.y}
-        x2={FORWARD_TAIL.x}
-        y2={FORWARD_TAIL.y}
+        x1={Q_X}
+        y1={FWD_Y}
+        x2={TAIL_X}
+        y2={FWD_Y}
         stroke="var(--color-primary)"
-        strokeOpacity={0.45}
-        strokeWidth={2}
-        strokeDasharray="2 6"
+        strokeOpacity={0.55}
+        strokeWidth={5}
+        strokeDasharray="3 10"
+        strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.45 }}
-        transition={{ delay: 2.5, duration: 0.55 }}
+        animate={{ pathLength: 1, opacity: 0.55 }}
+        transition={{ delay: 5.4, duration: 0.55 }}
       />
-      {/* Tiny arrowhead on the forward continuation, pointing off-screen */}
       <motion.polygon
-        points={`${FORWARD_TAIL.x - 12},${FORWARD_TAIL.y - 5} ${FORWARD_TAIL.x},${FORWARD_TAIL.y} ${FORWARD_TAIL.x - 12},${FORWARD_TAIL.y + 5}`}
+        points={`${TAIL_X - 16},${FWD_Y - 8} ${TAIL_X},${FWD_Y} ${TAIL_X - 16},${FWD_Y + 8}`}
         fill="var(--color-primary)"
-        fillOpacity={0.55}
+        fillOpacity={0.6}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.55 }}
-        transition={{ delay: 2.85, duration: 0.4 }}
+        animate={{ opacity: 0.6 }}
+        transition={{ delay: 5.85, duration: 0.4 }}
       />
 
       {/* "?" node -- glowing primary, the foreshadow into slide 06. */}
       <motion.g
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 2.55, duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
-        style={{ transformOrigin: `${Q.x}px ${Q.y}px` }}
+        transition={{ delay: 5.45, duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
+        style={{ transformOrigin: `${Q_X}px ${FWD_Y}px` }}
       >
         <circle
-          cx={Q.x}
-          cy={Q.y}
-          r={18}
+          cx={Q_X}
+          cy={FWD_Y}
+          r={22}
           fill="var(--color-primary)"
           fillOpacity={0.18}
           stroke="var(--color-primary)"
-          strokeWidth={2.2}
+          strokeWidth={2.6}
           filter="url(#detour-primary-glow)"
         />
         <text
-          x={Q.x}
-          y={Q.y + 7}
+          x={Q_X}
+          y={FWD_Y + 8}
           textAnchor="middle"
           fill="var(--color-primary)"
-          fontSize={22}
+          fontSize={26}
           fontWeight={700}
           letterSpacing={0}
           filter="url(#detour-primary-glow)"
@@ -455,10 +624,11 @@ const PathBranches: React.FC = () => {
 // BranchNode -- Corporate / Entrepreneurship dead-end node + friction phrase
 // ---------------------------------------------------------------------------
 //
-// A small node ring (danger-tinted) with the branch label and the verbatim
-// friction phrase. labelAbove controls whether the label sits above (true)
-// or below (false) the node, so the upper/lower branches don't crowd the
-// horizontal connector.
+// A node ring (danger-tinted) with the branch label and the verbatim friction
+// phrase. labelAbove controls whether the label sits above (true) or below
+// (false) the node. In the new sequential layout both rows pass labelAbove
+// = false -- friction sits below the node so the area above each node is
+// reserved for the entry-circumstance annotation.
 const BranchNode: React.FC<{
   cx: number;
   cy: number;
@@ -468,7 +638,7 @@ const BranchNode: React.FC<{
   labelAbove: boolean;
 }> = ({ cx, cy, label, friction, delay, labelAbove }) => {
   const labelY = labelAbove ? cy - 26 : cy + 32;
-  const frictionY = labelAbove ? cy - 46 : cy + 52;
+  const frictionY = labelAbove ? cy - 46 : cy + 54;
 
   return (
     <motion.g
@@ -477,23 +647,22 @@ const BranchNode: React.FC<{
       transition={{ delay, duration: 0.5 }}
       style={{ transformOrigin: `${cx}px ${cy}px` }}
     >
-      {/* Outer ring -- danger-tinted, low opacity, dashed to read as "tried
-          and exited." */}
+      {/* Outer ring -- danger-tinted, dashed to read as "tried and exited." */}
       <circle
         cx={cx}
         cy={cy}
-        r={11}
+        r={13}
         fill="var(--color-bg-card)"
         stroke="var(--color-danger)"
-        strokeOpacity={0.55}
-        strokeWidth={1.8}
+        strokeOpacity={0.65}
+        strokeWidth={2.4}
         strokeDasharray="3 3"
       />
       {/* Inner dot in muted -- not glowing, intentionally inert. */}
       <circle
         cx={cx}
         cy={cy}
-        r={3}
+        r={3.5}
         fill="var(--color-text-muted)"
         fillOpacity={0.6}
       />
@@ -503,8 +672,8 @@ const BranchNode: React.FC<{
         y={labelY}
         textAnchor="middle"
         fill="var(--color-text)"
-        fillOpacity={0.85}
-        fontSize={15}
+        fillOpacity={0.9}
+        fontSize={16}
         fontWeight={600}
         letterSpacing={1.5}
       >
@@ -516,8 +685,8 @@ const BranchNode: React.FC<{
         y={frictionY}
         textAnchor="middle"
         fill="var(--color-danger)"
-        fillOpacity={0.85}
-        fontSize={12}
+        fillOpacity={0.9}
+        fontSize={13}
         fontStyle="italic"
         letterSpacing={0.6}
       >
@@ -535,7 +704,7 @@ const DeadEndX: React.FC<{ cx: number; cy: number; delay: number }> = ({
   cy,
   delay,
 }) => {
-  const r = 7;
+  const r = 9;
   return (
     <motion.g
       initial={{ opacity: 0, scale: 0.6 }}
@@ -549,8 +718,8 @@ const DeadEndX: React.FC<{ cx: number; cy: number; delay: number }> = ({
         x2={cx + r}
         y2={cy + r}
         stroke="var(--color-danger)"
-        strokeOpacity={0.7}
-        strokeWidth={2}
+        strokeOpacity={0.75}
+        strokeWidth={3}
         strokeLinecap="round"
       />
       <line
@@ -559,8 +728,8 @@ const DeadEndX: React.FC<{ cx: number; cy: number; delay: number }> = ({
         x2={cx + r}
         y2={cy - r}
         stroke="var(--color-danger)"
-        strokeOpacity={0.7}
-        strokeWidth={2}
+        strokeOpacity={0.75}
+        strokeWidth={3}
         strokeLinecap="round"
       />
     </motion.g>
