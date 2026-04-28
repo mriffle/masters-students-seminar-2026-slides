@@ -36,9 +36,9 @@ import type { SlideProps } from '../types';
 // Central node (the data scientist — slide 10 makes this explicit) plus three
 // peripheral nodes arranged in a triangle around it. Held at low opacity so
 // the headline reads first and the diagram registers second, peripherally.
-const VB = { w: 1000, h: 600 };
+const VB = { w: 1000, h: 760 };
 const CENTER = { x: VB.w / 2, y: VB.h / 2 };
-const PERIPH_R = 240; // distance from center to peripheral nodes
+const PERIPH_R = 330; // distance from center to peripheral nodes
 
 // Three angles for the triangle of peripheral nodes (in degrees, 0 = up).
 // 0 / 120 / 240 places one node at top, two at bottom-left/bottom-right —
@@ -58,7 +58,7 @@ const Part2Frame: React.FC<SlideProps> = () => {
 
   return (
     <SlideContainer>
-      <div className="relative w-full max-w-[92vw] h-[78vh] flex items-center justify-center">
+      <div className="relative w-full max-w-[92vw] h-[86vh] flex items-center justify-center">
         {/* --- Foreshadow visual: faint three-node-around-center hint --- */}
         {/* Sits behind the headline. Low opacity throughout so it reads as
             atmosphere, not as an established diagram. */}
@@ -106,7 +106,7 @@ const Part2Frame: React.FC<SlideProps> = () => {
           <motion.circle
             cx={CENTER.x}
             cy={CENTER.y}
-            r={90}
+            r={120}
             fill="url(#part2-frame-center-grad)"
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -127,17 +127,17 @@ const Part2Frame: React.FC<SlideProps> = () => {
               <circle
                 cx={p.x}
                 cy={p.y}
-                r={20}
+                r={28}
                 fill="var(--color-text-muted)"
                 fillOpacity={0.08}
                 stroke="var(--color-text-muted)"
-                strokeWidth={1.25}
+                strokeWidth={1.4}
                 strokeOpacity={0.32}
               />
               <circle
                 cx={p.x}
                 cy={p.y}
-                r={3.5}
+                r={4.5}
                 fill="var(--color-text-muted)"
                 fillOpacity={0.5}
               />
@@ -155,18 +155,18 @@ const Part2Frame: React.FC<SlideProps> = () => {
             <circle
               cx={CENTER.x}
               cy={CENTER.y}
-              r={26}
+              r={34}
               fill="var(--color-primary)"
               fillOpacity={0.12}
               stroke="var(--color-primary)"
-              strokeWidth={1.5}
+              strokeWidth={1.6}
               strokeOpacity={0.55}
               filter="url(#part2-frame-glow)"
             />
             <circle
               cx={CENTER.x}
               cy={CENTER.y}
-              r={5}
+              r={6.5}
               fill="var(--color-primary)"
               fillOpacity={0.85}
               filter="url(#part2-frame-glow)"
@@ -239,10 +239,10 @@ const Part2Frame: React.FC<SlideProps> = () => {
             style={{ background: 'var(--color-primary)', opacity: 0.55 }}
           />
           <motion.div
-            className="mt-4 text-base md:text-lg tracking-[0.18em] uppercase"
-            style={{ color: 'var(--color-text-muted)' }}
+            className="mt-4 text-lg md:text-xl lg:text-2xl font-semibold tracking-[0.32em] uppercase"
+            style={{ color: 'var(--color-primary)', opacity: 0.95 }}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: 0.95 }}
             transition={{ delay: 1.25, duration: 0.55 }}
           >
             What I Actually Do

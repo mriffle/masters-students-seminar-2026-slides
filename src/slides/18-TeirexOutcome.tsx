@@ -86,7 +86,7 @@ const CURVE_VB = { w: 1000, h: 360 };
 // Plot rect inside the SVG (leaves room for axis labels)
 const PLOT = {
   left: 90,
-  right: 940,
+  right: 980,
   top: 30,
   bottom: 290,
 };
@@ -211,7 +211,7 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
         TEI-REX (3/3): Outcome
       </SlideTitle>
 
-      <div className="relative w-full max-w-[92vw] h-[70vh] flex flex-col items-stretch">
+      <div className="relative w-full max-w-[92vw] h-[72vh] flex flex-col items-stretch">
         {/* --- LAST TEAM STANDING badge (top-left corner) --- */}
         <motion.div
           className="absolute top-0 left-0 flex items-center gap-2"
@@ -270,11 +270,18 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
           </div>
         </motion.div>
 
-        {/* --- Hero: accuracy curve --- */}
-        <div className="relative w-full flex-[1.6] flex items-center justify-center mt-12 md:mt-14">
+        {/* --- Hero: accuracy curve ---
+             Sized to the SVG's native aspect ratio (≈ 2.78:1) so the chart
+             fills horizontally without leaving a tall empty band above OR
+             below it. The remaining vertical space below is consumed by the
+             masterclass line + friction strip — no dead band. */}
+        <div
+          className="relative w-full flex items-center justify-center mt-10 md:mt-12"
+          style={{ aspectRatio: `${VB.w} / ${VB.h}`, maxHeight: '46vh' }}
+        >
           <svg
             viewBox={`0 0 ${VB.w} ${VB.h}`}
-            className="w-full h-full"
+            style={{ width: '100%', height: '100%', display: 'block' }}
             preserveAspectRatio="xMidYMid meet"
             aria-label="Performance accuracy curve. X-axis: radiation dose, low to high. Y-axis: classification accuracy, zero to one hundred percent. The curve starts above the fifty-percent random-chance line at low doses, with wide uncertainty shading, and climbs to the mid-nineties at high doses with narrower uncertainty. The high-dose region is shaded brighter as the extremely-good zone."
           >
@@ -310,21 +317,6 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 1.1, duration: 0.7 }}
             />
-            <motion.text
-              x={(goodZoneLeft + goodZoneRight) / 2}
-              y={PLOT.top + 18}
-              textAnchor="middle"
-              fontSize={11}
-              fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-              letterSpacing={2.5}
-              fill="var(--color-secondary)"
-              fillOpacity={0.85}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.85 }}
-              transition={{ delay: 1.5, duration: 0.5 }}
-            >
-              EXTREMELY GOOD ZONE
-            </motion.text>
 
             {/* Y-axis grid lines + labels */}
             {[0, 0.25, 0.5, 0.75, 1.0].map((tick) => (
@@ -361,27 +353,28 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
               x2={PLOT.right}
               y2={randomY}
               stroke="var(--color-text-muted)"
-              strokeWidth={1.5}
-              strokeOpacity={0.55}
+              strokeWidth={1.75}
+              strokeOpacity={0.85}
               strokeDasharray="6 6"
               initial={{ pathLength: 0, opacity: 0 }}
               animate={{ pathLength: 1, opacity: 1 }}
               transition={{ delay: 0.85, duration: 0.6 }}
             />
             <motion.text
-              x={PLOT.right - 8}
-              y={randomY - 6}
-              textAnchor="end"
-              fontSize={11}
+              x={PLOT.left + 10}
+              y={randomY - 8}
+              textAnchor="start"
+              fontSize={13}
+              fontWeight={600}
               fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-              letterSpacing={1.6}
-              fill="var(--color-text-muted)"
-              fillOpacity={0.85}
+              letterSpacing={1.8}
+              fill="var(--color-text)"
+              fillOpacity={0.95}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.85 }}
+              animate={{ opacity: 0.95 }}
               transition={{ delay: 1.05, duration: 0.5 }}
             >
-              random chance · 50%
+              random chance — 50%
             </motion.text>
 
             {/* X-axis baseline */}
@@ -408,25 +401,27 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
             {/* X-axis label and arrow */}
             <text
               x={PLOT.left - 4}
-              y={PLOT.bottom + 22}
+              y={PLOT.bottom + 24}
               textAnchor="start"
-              fontSize={11}
+              fontSize={13}
+              fontWeight={600}
               fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-              letterSpacing={1.6}
-              fill="var(--color-text-muted)"
-              fillOpacity={0.85}
+              letterSpacing={1.8}
+              fill="var(--color-text)"
+              fillOpacity={0.95}
             >
               low dose
             </text>
             <text
-              x={PLOT.right + 4}
-              y={PLOT.bottom + 22}
+              x={PLOT.right}
+              y={PLOT.bottom + 24}
               textAnchor="end"
-              fontSize={11}
+              fontSize={13}
+              fontWeight={600}
               fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-              letterSpacing={1.6}
-              fill="var(--color-text-muted)"
-              fillOpacity={0.85}
+              letterSpacing={1.8}
+              fill="var(--color-text)"
+              fillOpacity={0.95}
             >
               high dose &rarr;
             </text>
@@ -492,6 +487,16 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
               transition={{ delay: 1.55, duration: 1.4, ease: [0.4, 0, 0.2, 1] }}
             />
 
+            {/* "EXTREMELY GOOD ZONE" label removed (Round 7 fix): when placed
+                at the top of the plot, it collided horizontally with the gray
+                "honest outcome · cutting-edge methods" subtitle beneath the
+                TEI-REX badge in the upper-right. Bottom-right placement was
+                considered but the curve already visibly climbs into the
+                brighter good-zone gradient on the right, and the magenta
+                "Extremely good at higher doses" verdict caption + the
+                magenta "developed cutting-edge tools and methods" caption
+                already carry the message. The label was redundant. */}
+
             {/* Anchor markers + outcome bullet labels */}
             {OUTCOME_BULLETS.map((b, i) => {
               const pt = CURVE_POINTS.reduce((closest, c) =>
@@ -517,6 +522,30 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
                 b.anchorX < 0.2 ? 'start' : b.anchorX > 0.75 ? 'end' : 'middle';
               const labelX =
                 anchor === 'start' ? cx + 6 : anchor === 'end' ? cx - 6 : cx;
+
+              // Background plate sizing — the magenta bullets sit on the
+              // rising curve at high dose, so they need a solid bg-card plate
+              // behind the text or the curve strikes through the letters.
+              // (The muted low-dose bullets sit above the curve in clear
+              // space, no plate needed.) Width is estimated from char count
+              // at this font size; we add generous horizontal padding.
+              const FONT_SIZE = 13;
+              const charW = FONT_SIZE * 0.56;
+              const textW = b.text.length * charW;
+              const padX = 8;
+              const padY = 4;
+              const plateW = textW + padX * 2;
+              const plateH = FONT_SIZE + padY * 2;
+              // Plate x depends on textAnchor.
+              const plateX =
+                anchor === 'start'
+                  ? labelX - padX
+                  : anchor === 'end'
+                    ? labelX - textW - padX
+                    : labelX - textW / 2 - padX;
+              // Plate y — text baseline sits a bit below labelY; lift the
+              // plate so the text is vertically centered inside it.
+              const plateY = labelY - FONT_SIZE + 2;
 
               return (
                 <motion.g
@@ -547,12 +576,31 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
                     strokeWidth={1}
                     strokeDasharray="2 3"
                   />
+                  {/* Solid bg-card plate behind the text — only for the
+                      magenta bullets, which sit on the rising curve in the
+                      high-dose region and would otherwise be struck through
+                      by the curve line. */}
+                  {b.tone === 'magenta' && (
+                    <rect
+                      x={plateX}
+                      y={plateY}
+                      width={plateW}
+                      height={plateH}
+                      rx={5}
+                      ry={5}
+                      fill="var(--color-bg-card)"
+                      fillOpacity={0.96}
+                      stroke="var(--color-secondary)"
+                      strokeOpacity={0.45}
+                      strokeWidth={1}
+                    />
+                  )}
                   {/* Bullet text */}
                   <text
                     x={labelX}
                     y={labelY}
                     textAnchor={anchor}
-                    fontSize={13}
+                    fontSize={FONT_SIZE}
                     fontWeight={b.tone === 'magenta' ? 700 : 500}
                     fill={labelTone}
                     fillOpacity={b.tone === 'magenta' ? 1 : 0.9}
@@ -572,7 +620,7 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
         {/* --- "Masterclass in" supporting line — small, between curve and
              friction strip. Compresses the seven-skill list into one line. */}
         <motion.div
-          className="w-full text-center mt-1 mb-2"
+          className="w-full text-center mt-3 mb-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 3.0, duration: 0.55 }}
@@ -594,13 +642,15 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
         </motion.div>
 
         {/* --- Friction strip (slim, bottom; --color-amber background) ---
-             Honest texture, not failure. Two muted chips on a dim amber wash. */}
+             Honest texture, not failure. Two muted chips on a dim amber wash.
+             mt-auto pins the strip to the bottom of the column so it always
+             anchors the slide's "honest friction" theme rather than floating. */}
         <motion.div
           className="w-full mt-auto rounded-xl flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6 px-4 md:px-6 py-3"
           style={{
-            background: 'rgba(255, 171, 0, 0.10)',
-            border: '1px solid rgba(255, 171, 0, 0.45)',
-            boxShadow: '0 0 18px rgba(255, 171, 0, 0.12) inset',
+            background: 'rgba(255, 171, 0, 0.13)',
+            border: '1px solid rgba(255, 171, 0, 0.55)',
+            boxShadow: '0 0 22px rgba(255, 171, 0, 0.18) inset',
           }}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -629,7 +679,7 @@ const TeirexOutcome: React.FC<SlideProps> = () => {
 
           {/* Two muted friction chips */}
           <div className="flex flex-1 flex-col md:flex-row gap-2 md:gap-4 justify-end items-stretch md:items-center w-full">
-            <FrictionChip text="high-stakes projects are stressful" />
+            <FrictionChip text="high-stakes is stressful" />
             <FrictionChip text="presenting never gets fully comfortable" />
           </div>
         </motion.div>

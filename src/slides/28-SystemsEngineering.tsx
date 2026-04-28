@@ -521,7 +521,18 @@ const SystemsEngineering: React.FC<SlideProps> = () => {
             const y1 = configRight.y;
             const x2 = aiLeft.x - 8;
             const y2 = aiLeft.y;
+            // Place the label above the arrow line, well clear of both the
+            // configuration node and the hex's vertical span. Label is
+            // centered on the arrow midpoint horizontally and lifted high
+            // enough that its bottom edge sits above the hex top point
+            // (AI.cy - AI.r - 10).
             const midX = (x1 + x2) / 2;
+            const labelW = 184;
+            const labelH = 24;
+            // Sits above the "AGENT OUTPUTS" mini-caption, with clearance.
+            const labelTopY = AI.cy - AI.r - 72;
+            const labelBottomY = labelTopY + labelH;
+            const labelCenterY = labelTopY + labelH / 2;
             return (
               <>
                 {/* Arrow */}
@@ -539,12 +550,26 @@ const SystemsEngineering: React.FC<SlideProps> = () => {
                   animate={{ pathLength: 1, opacity: 1 }}
                   transition={{ delay: 1.45, duration: 0.65 }}
                 />
+                {/* Leader from arrow up to label */}
+                <motion.line
+                  x1={midX}
+                  y1={y1 - 2}
+                  x2={midX}
+                  y2={labelBottomY}
+                  stroke="var(--color-tertiary)"
+                  strokeOpacity={0.45}
+                  strokeWidth={1}
+                  strokeDasharray="2 3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.6, duration: 0.4 }}
+                />
                 {/* Label backplate */}
                 <motion.rect
-                  x={midX - 105}
-                  y={y1 - 32}
-                  width={210}
-                  height={26}
+                  x={midX - labelW / 2}
+                  y={labelTopY}
+                  width={labelW}
+                  height={labelH}
                   rx={6}
                   fill="var(--color-bg-card)"
                   stroke="var(--color-tertiary)"
@@ -556,14 +581,14 @@ const SystemsEngineering: React.FC<SlideProps> = () => {
                 />
                 <motion.text
                   x={midX}
-                  y={y1 - 14}
+                  y={labelCenterY + 4}
                   textAnchor="middle"
-                  fontSize={11}
+                  fontSize={10}
                   fontWeight={900}
                   fill="var(--color-tertiary)"
                   style={{
                     fontFamily: 'Inter, system-ui, sans-serif',
-                    letterSpacing: '0.22em',
+                    letterSpacing: '0.20em',
                     textTransform: 'uppercase',
                   }}
                   initial={{ opacity: 0 }}
@@ -572,22 +597,58 @@ const SystemsEngineering: React.FC<SlideProps> = () => {
                 >
                   opinionated instructions
                 </motion.text>
-                {/* Subtle "load" annotation under the arrow */}
-                <motion.text
-                  x={midX}
-                  y={y1 + 22}
-                  textAnchor="middle"
-                  fontSize={10}
-                  fontStyle="italic"
-                  fill="var(--color-text-muted)"
-                  fillOpacity={0.85}
-                  style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.85 }}
-                  transition={{ delay: 1.85, duration: 0.4 }}
-                >
-                  loaded to keep the agent on track
-                </motion.text>
+                {/* Subtle "load" annotation under the arrow.
+                    Shifted leftward and given a solid backplate so the
+                    italic caption sits clear of the AI hexagon's left
+                    edge (leftmost hex point ~ AI.cx - AI.r * cos(30°)).
+                    Anchored to configRight so it stays close to the
+                    arrow's origin and never crowds the hex. */}
+                {(() => {
+                  const annoText = 'loaded to keep the agent on track';
+                  const annoW = 156;
+                  const annoH = 18;
+                  // Sit the caption between the configuration node's
+                  // right edge and the hex's leftmost vertex (~AI.cx -
+                  // AI.r * cos(30°) ≈ 746) with clearance on both sides.
+                  const hexLeftmostX = AI.cx - AI.r * Math.cos(Math.PI / 6);
+                  const annoRightX = hexLeftmostX - 14;
+                  const annoCenterX = annoRightX - annoW / 2;
+                  const annoTopY = y1 + 14;
+                  return (
+                    <>
+                      <motion.rect
+                        x={annoCenterX - annoW / 2}
+                        y={annoTopY}
+                        width={annoW}
+                        height={annoH}
+                        rx={5}
+                        fill="var(--color-bg-card)"
+                        fillOpacity={0.95}
+                        stroke="var(--color-text-muted)"
+                        strokeOpacity={0.25}
+                        strokeWidth={1}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1.8, duration: 0.4 }}
+                      />
+                      <motion.text
+                        x={annoCenterX}
+                        y={annoTopY + annoH - 5}
+                        textAnchor="middle"
+                        fontSize={10}
+                        fontStyle="italic"
+                        fill="var(--color-text-muted)"
+                        fillOpacity={0.95}
+                        style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.95 }}
+                        transition={{ delay: 1.85, duration: 0.4 }}
+                      >
+                        {annoText}
+                      </motion.text>
+                    </>
+                  );
+                })()}
               </>
             );
           })()}
@@ -730,18 +791,23 @@ const SystemsEngineering: React.FC<SlideProps> = () => {
             );
           })}
 
-          {/* "outputs" caption above the satellite cluster, very small */}
+          {/* "outputs" caption — anchored below the AI hex (between the
+              hex bottom and its label cluster is too tight, so it sits
+              just under the leftmost lower-satellite area). Moved off
+              the top of the hex to avoid colliding with the upper-right
+              "code" output chip; tightened letter-spacing and font so it
+              reads as a small section header without crowding any chip. */}
           <motion.text
-            x={AI.cx}
-            y={AI.cy - AI.r - 28}
-            textAnchor="middle"
+            x={AI.cx - AI.r - 18}
+            y={AI.cy - AI.r - 4}
+            textAnchor="end"
             fontSize={9}
             fontWeight={800}
             fill="var(--color-text-muted)"
             fillOpacity={0.7}
             style={{
               fontFamily: 'Inter, system-ui, sans-serif',
-              letterSpacing: '0.32em',
+              letterSpacing: '0.22em',
               textTransform: 'uppercase',
             }}
             initial={{ opacity: 0 }}
@@ -753,31 +819,49 @@ const SystemsEngineering: React.FC<SlideProps> = () => {
 
           {/* ============================================================ */}
           {/* CAPTION — "This is itself a fundamental."                    */}
-          {/* The italic tagline that anchors the section thesis.          */}
+          {/* The italic tagline that anchors the section thesis. Sits     */}
+          {/* prominently in the lower region of the slide on its own       */}
+          {/* backplate, with the footnotes below.                          */}
           {/* ============================================================ */}
-          <motion.text
-            x={VB.w / 2}
-            y={460}
-            textAnchor="middle"
-            fontSize={18}
-            fontStyle="italic"
-            fontWeight={500}
-            fill="var(--color-text)"
-            style={{
-              fontFamily: 'Inter, system-ui, sans-serif',
-              letterSpacing: '0.01em',
-            }}
-            initial={{ opacity: 0, y: 6 }}
+          <motion.g
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 2.55, duration: 0.55 }}
           >
-            "This is itself a fundamental."
-          </motion.text>
+            {/* Subtle backplate to lift the caption out of the empty space */}
+            <rect
+              x={VB.w / 2 - 250}
+              y={418}
+              width={500}
+              height={42}
+              rx={10}
+              fill="var(--color-tertiary)"
+              fillOpacity={0.05}
+              stroke="var(--color-tertiary)"
+              strokeOpacity={0.25}
+              strokeWidth={1}
+            />
+            <text
+              x={VB.w / 2}
+              y={446}
+              textAnchor="middle"
+              fontSize={22}
+              fontStyle="italic"
+              fontWeight={600}
+              fill="var(--color-text)"
+              style={{
+                fontFamily: 'Inter, system-ui, sans-serif',
+                letterSpacing: '0.01em',
+              }}
+            >
+              &ldquo;This is itself a fundamental.&rdquo;
+            </text>
+          </motion.g>
 
           {/* FOOTNOTES — public examples + IDEs note */}
           <motion.text
             x={VB.w / 2}
-            y={494}
+            y={488}
             textAnchor="middle"
             fontSize={11}
             fill="var(--color-text-muted)"
@@ -791,7 +875,7 @@ const SystemsEngineering: React.FC<SlideProps> = () => {
           </motion.text>
           <motion.text
             x={VB.w / 2}
-            y={516}
+            y={512}
             textAnchor="middle"
             fontSize={11}
             fill="var(--color-text-muted)"

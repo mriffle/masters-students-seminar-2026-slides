@@ -176,33 +176,39 @@ const CorporateDetour: React.FC<SlideProps> = () => {
 // Path branches diagram
 // ---------------------------------------------------------------------------
 //
-// viewBox 1000 x 360.
-// Origin sits at left-center; three branches fan out to the right.
+// viewBox 1000 x 480.
+// Origin sits at left-upper; the two dashed dead-end branches fan out near
+// the top half, and the forward "?" path lives in the bottom region --
+// "Below, a third path -- solid, glowing -- labeled simply '?' leading
+// off-screen toward the next slide" (SLIDES.md slide 05).
 //
 //   (origin) --dashed danger->muted--> [Corporate]        X
 //            --dashed danger->muted--> [Entrepreneurship] X
-//            --solid, glowing primary--> ?  (exits right edge)
 //
-// The forward "?" path lands above center to give the dead-end branches the
-// natural visual weight of "things tried and exited."
+//            --solid, glowing primary----------------->  ?   --> (off-screen)
+//
+// Placing the forward path beneath both dead-ends gives it the foreshadowing
+// "what's next" reading -- the audience's eye lands on it last, and it
+// physically occupies the otherwise-empty bottom band of the slide.
 const PathBranches: React.FC = () => {
-  const ORIGIN = { x: 90, y: 180 };
+  const ORIGIN = { x: 90, y: 160 };
 
   // Corporate branch: upper dead-end.
   const CORP = { x: 600, y: 80 };
   const CORP_END = { x: 760, y: 80 }; // X-mark terminator
 
-  // Entrepreneurship branch: lower dead-end.
-  const ENT = { x: 600, y: 280 };
-  const ENT_END = { x: 760, y: 280 };
+  // Entrepreneurship branch: lower dead-end (still in upper half of the SVG).
+  const ENT = { x: 600, y: 240 };
+  const ENT_END = { x: 760, y: 240 };
 
-  // Forward "?" path: middle, exits right.
-  const Q = { x: 720, y: 180 };
-  const FORWARD_TAIL = { x: 1000, y: 180 };
+  // Forward "?" path: bottom band of the SVG, exits right off-screen.
+  const FWD_ORIGIN = { x: 90, y: 380 };
+  const Q = { x: 720, y: 380 };
+  const FORWARD_TAIL = { x: 1000, y: 380 };
 
   return (
     <svg
-      viewBox="0 0 1000 360"
+      viewBox="0 0 1000 480"
       className="w-full h-full"
       aria-label="Two abandoned paths (Corporate, Entrepreneurship) and a third forward path leading off-screen."
     >
@@ -344,10 +350,39 @@ const PathBranches: React.FC = () => {
         labelAbove={false}
       />
 
-      {/* --- Forward "?" path (solid, glowing primary, exits right edge) --- */}
+      {/* --- Forward "?" path: bottom band, solid+glowing primary, exits right.
+          Lives in the bottom region of the SVG so it physically reads as
+          "what's next" beneath the two abandoned branches above. --- */}
+
+      {/* Small forward-path origin marker so the line has a visible start. */}
+      <motion.g
+        initial={{ opacity: 0, scale: 0.7 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1.85, duration: 0.4 }}
+        style={{ transformOrigin: `${FWD_ORIGIN.x}px ${FWD_ORIGIN.y}px` }}
+      >
+        <circle
+          cx={FWD_ORIGIN.x}
+          cy={FWD_ORIGIN.y}
+          r={6}
+          fill="var(--color-bg-card)"
+          stroke="var(--color-primary)"
+          strokeOpacity={0.7}
+          strokeWidth={1.6}
+          filter="url(#detour-primary-glow)"
+        />
+        <circle
+          cx={FWD_ORIGIN.x}
+          cy={FWD_ORIGIN.y}
+          r={2.2}
+          fill="var(--color-primary)"
+          fillOpacity={0.95}
+        />
+      </motion.g>
+
       <motion.line
-        x1={ORIGIN.x}
-        y1={ORIGIN.y}
+        x1={FWD_ORIGIN.x}
+        y1={FWD_ORIGIN.y}
         x2={Q.x}
         y2={Q.y}
         stroke="var(--color-primary)"

@@ -40,9 +40,8 @@ const Toolkit: React.FC<SlideProps> = () => {
         The Toolkit
       </SlideTitle>
 
-      <div className="w-full max-w-[92vw] h-full flex flex-col items-center gap-4">
-        <ColumnHeaders />
-        <div className="w-full grid grid-cols-2 gap-6 md:gap-10 mt-1">
+      <div className="w-full max-w-[92vw] flex-1 flex flex-col items-center justify-center gap-[2.2vh] pt-[1vh] pb-[1vh]">
+        <div className="w-full grid grid-cols-2 gap-6 md:gap-10 items-start">
           <StableColumn />
           <ShiftingColumn />
         </div>
@@ -53,74 +52,58 @@ const Toolkit: React.FC<SlideProps> = () => {
 };
 
 // ---------------------------------------------------------------------------
-// Column headers -- "Stable" and "Shifting"
+// Column header -- shared, fixed-height label + underline
 // ---------------------------------------------------------------------------
+//
+// Header is rendered as the first child of each column with an explicit fixed
+// height and identical marginBottom. This guarantees the first card top-edge
+// is at exactly the same y in both columns, regardless of label content.
 
-const ColumnHeaders: React.FC = () => {
+const COLUMN_HEADER_HEIGHT = 'clamp(40px, 4.6vh, 56px)';
+
+const ColumnHeader: React.FC<{
+  label: string;
+  color: string;
+  underlineOpacity: number;
+  labelOpacity: number;
+  delay: number;
+}> = ({ label, color, underlineOpacity, labelOpacity, delay }) => {
   return (
-    <div className="w-full grid grid-cols-2 gap-6 md:gap-10">
-      <motion.div
-        className="flex flex-col items-center"
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
+    <motion.div
+      className="flex flex-col items-center justify-start"
+      style={{
+        height: COLUMN_HEADER_HEIGHT,
+        flexShrink: 0,
+      }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.5 }}
+    >
+      <span
+        className="font-mono"
+        style={{
+          color,
+          fontSize: 'clamp(0.72rem, 0.95vw, 0.9rem)',
+          lineHeight: 1.2,
+          letterSpacing: '0.28em',
+          textTransform: 'uppercase',
+          opacity: labelOpacity,
+        }}
       >
-        <span
-          className="font-mono"
-          style={{
-            color: 'var(--color-text-muted)',
-            fontSize: 'clamp(0.72rem, 0.95vw, 0.9rem)',
-            letterSpacing: '0.28em',
-            textTransform: 'uppercase',
-            opacity: 0.85,
-          }}
-        >
-          Stable
-        </span>
-        <div
-          aria-hidden
-          style={{
-            width: 'clamp(36px, 5vw, 60px)',
-            height: 1.5,
-            background: 'var(--color-text-muted)',
-            opacity: 0.45,
-            marginTop: 6,
-            borderRadius: 999,
-          }}
-        />
-      </motion.div>
-
-      <motion.div
-        className="flex flex-col items-center"
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-      >
-        <span
-          className="font-mono"
-          style={{
-            color: 'var(--color-primary)',
-            fontSize: 'clamp(0.72rem, 0.95vw, 0.9rem)',
-            letterSpacing: '0.28em',
-            textTransform: 'uppercase',
-            opacity: 0.95,
-          }}
-        >
-          Shifting
-        </span>
-        <div
-          aria-hidden
-          style={{
-            width: 'clamp(36px, 5vw, 60px)',
-            height: 1.5,
-            background: 'var(--color-primary)',
-            opacity: 0.7,
-            marginTop: 6,
-            borderRadius: 999,
-          }}
-        />
-      </motion.div>
-    </div>
+        {label}
+      </span>
+      <div
+        aria-hidden
+        style={{
+          width: 'clamp(36px, 5vw, 60px)',
+          height: 1.5,
+          background: color,
+          opacity: underlineOpacity,
+          marginTop: 6,
+          borderRadius: 999,
+        }}
+      />
+    </motion.div>
   );
 };
 
@@ -142,7 +125,17 @@ const STABLE_TOOLS: StableTool[] = [
 
 const StableColumn: React.FC = () => {
   return (
-    <div className="flex flex-col gap-3">
+    <div
+      className="flex flex-col items-stretch gap-[1.6vh]"
+      style={{ paddingTop: 0 }}
+    >
+      <ColumnHeader
+        label="Stable"
+        color="var(--color-text-muted)"
+        underlineOpacity={0.45}
+        labelOpacity={0.85}
+        delay={0.5}
+      />
       {STABLE_TOOLS.map((t, i) => (
         <StableCard key={t.name} tool={t} delay={0.75 + i * 0.1} />
       ))}
@@ -157,7 +150,7 @@ const StableCard: React.FC<{ tool: StableTool; delay: number }> = ({ tool, delay
       style={{
         background: 'var(--color-bg-card)',
         border: '1px solid color-mix(in srgb, var(--color-text-muted) 22%, transparent)',
-        padding: 'clamp(0.7rem, 1.1vw, 0.95rem) clamp(0.95rem, 1.5vw, 1.25rem)',
+        padding: 'clamp(0.95rem, 1.6vw, 1.35rem) clamp(1.1rem, 1.9vw, 1.55rem)',
       }}
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
@@ -167,7 +160,7 @@ const StableCard: React.FC<{ tool: StableTool; delay: number }> = ({ tool, delay
         className="font-semibold"
         style={{
           color: 'var(--color-text)',
-          fontSize: 'clamp(0.95rem, 1.25vw, 1.2rem)',
+          fontSize: 'clamp(1.1rem, 1.55vw, 1.45rem)',
           flexShrink: 0,
         }}
       >
@@ -177,7 +170,7 @@ const StableCard: React.FC<{ tool: StableTool; delay: number }> = ({ tool, delay
         className="leading-snug"
         style={{
           color: 'var(--color-text-muted)',
-          fontSize: 'clamp(0.78rem, 0.95vw, 0.92rem)',
+          fontSize: 'clamp(0.85rem, 1.05vw, 1rem)',
           opacity: 0.9,
         }}
       >
@@ -199,7 +192,17 @@ const StableCard: React.FC<{ tool: StableTool; delay: number }> = ({ tool, delay
 
 const ShiftingColumn: React.FC = () => {
   return (
-    <div className="flex flex-col gap-4 justify-center">
+    <div
+      className="flex flex-col items-stretch gap-[1.6vh]"
+      style={{ paddingTop: 0 }}
+    >
+      <ColumnHeader
+        label="Shifting"
+        color="var(--color-primary)"
+        underlineOpacity={0.7}
+        labelOpacity={0.95}
+        delay={0.6}
+      />
       <ShiftCard
         name="Jupyter Notebooks"
         role="Still used; drifting away from."
@@ -230,7 +233,7 @@ const ShiftCard: React.FC<{
 
   return (
     <motion.div
-      className="relative rounded-lg flex items-center gap-4 overflow-hidden"
+      className="relative rounded-lg flex items-center gap-6 overflow-hidden"
       style={{
         background: 'var(--color-bg-card)',
         border: isUp
@@ -239,7 +242,7 @@ const ShiftCard: React.FC<{
         boxShadow: isUp
           ? '0 0 0 1px color-mix(in srgb, var(--color-primary) 15%, transparent), 0 0 56px -16px color-mix(in srgb, var(--color-primary) 50%, transparent)'
           : 'none',
-        padding: 'clamp(0.95rem, 1.5vw, 1.25rem) clamp(1.1rem, 1.7vw, 1.4rem)',
+        padding: 'clamp(1.9rem, 2.9vw, 2.6rem) clamp(1.7rem, 2.6vw, 2.3rem)',
         opacity: isUp ? 1 : 0.78,
       }}
       initial={{ opacity: 0, x: 12 }}
@@ -262,13 +265,13 @@ const ShiftCard: React.FC<{
       {/* Directional arrow */}
       <DirectionalArrow direction={direction} delay={delay + 0.15} />
 
-      <div className="flex flex-col gap-1 flex-1 min-w-0">
+      <div className="flex flex-col gap-[0.6vh] flex-1 min-w-0">
         <div className="flex items-baseline gap-3 flex-wrap">
           <h3
             className="font-semibold leading-snug"
             style={{
               color: isUp ? 'var(--color-text)' : 'var(--color-text-muted)',
-              fontSize: 'clamp(1rem, 1.35vw, 1.3rem)',
+              fontSize: 'clamp(1.45rem, 2.1vw, 2rem)',
             }}
           >
             {name}
@@ -277,7 +280,7 @@ const ShiftCard: React.FC<{
             className="font-mono"
             style={{
               color: accent,
-              fontSize: 'clamp(0.65rem, 0.85vw, 0.78rem)',
+              fontSize: 'clamp(0.78rem, 1.05vw, 0.98rem)',
               letterSpacing: '0.22em',
               textTransform: 'uppercase',
               opacity: isUp ? 0.95 : 0.7,
@@ -290,7 +293,7 @@ const ShiftCard: React.FC<{
           className="leading-snug italic"
           style={{
             color: 'var(--color-text-muted)',
-            fontSize: 'clamp(0.8rem, 1vw, 0.95rem)',
+            fontSize: 'clamp(1.02rem, 1.35vw, 1.25rem)',
             opacity: isUp ? 0.95 : 0.85,
           }}
         >
@@ -322,8 +325,8 @@ const DirectionalArrow: React.FC<{ direction: 'up' | 'down'; delay: number }> = 
   return (
     <motion.div
       style={{
-        width: 'clamp(36px, 4vw, 52px)',
-        height: 'clamp(36px, 4vw, 52px)',
+        width: 'clamp(60px, 6.4vw, 88px)',
+        height: 'clamp(60px, 6.4vw, 88px)',
         flexShrink: 0,
         transform: isUp ? 'none' : 'rotate(180deg)',
         opacity,
@@ -371,11 +374,12 @@ const DirectionalArrow: React.FC<{ direction: 'up' | 'down'; delay: number }> = 
 const Footnote: React.FC = () => {
   return (
     <motion.p
-      className="text-center italic leading-snug mt-2"
+      className="text-center italic leading-snug"
       style={{
         color: 'var(--color-text-muted)',
         fontSize: 'clamp(0.85rem, 1.1vw, 1.05rem)',
         maxWidth: '70vw',
+        marginTop: '0.4vh',
       }}
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 0.95, y: 0 }}

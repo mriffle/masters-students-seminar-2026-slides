@@ -131,8 +131,11 @@ const DOMAIN_EXAMPLES = [
 const Inversion: React.FC<SlideProps> = () => {
   return (
     <SlideContainer>
-      <div className="w-full max-w-[94vw] h-full flex flex-col items-center justify-start gap-4">
-        <SlideTitle subtitle="Syntax was the bulk. Now it's the floor.">
+      <div className="w-full max-w-[94vw] h-full flex flex-col items-center justify-start gap-0">
+        <SlideTitle
+          subtitle="Syntax was the bulk. Now it's the floor."
+          className="!mb-1"
+        >
           The Inversion
         </SlideTitle>
 
@@ -144,10 +147,12 @@ const Inversion: React.FC<SlideProps> = () => {
             framer-motion. We do this with two motion.div panels rather than
             an SVG so the type can be selectable / accessible and so the
             chip layouts can use real text wrapping. The central pivot
-            indicator is a small SVG that rotates 180° during the flip. */}
+            indicator is a load-bearing SVG that rotates 180° during the
+            flip. Stage fills the available vertical canvas so FROM/TO and
+            the lever each get real space. */}
         <div
-          className="relative w-full max-w-[88vw] flex flex-col items-stretch"
-          style={{ height: '68vh' }}
+          className="relative w-full max-w-[92vw] flex-1 flex flex-col items-stretch"
+          style={{ minHeight: 0 }}
         >
           <FromPanel />
           <CentralPivot />
@@ -167,11 +172,15 @@ const FromPanel: React.FC = () => {
   return (
     <motion.div
       // The flip: panel shrinks vertically (flex-grow) and fades opacity
-      // toward "commodity" state. Initial flexBasis is large; final is small.
-      className="relative w-full flex flex-col items-center justify-center px-6"
-      initial={{ flexBasis: '58%', opacity: 1 }}
+      // toward "commodity" state. Initial flexGrow is large; final is small.
+      // Using flex-grow ratios (rather than basis) so FROM + pivot + TO
+      // together always exactly fill the stage with no leftover band.
+      // justify-start so the FROM header sits up against the subtitle —
+      // no dead band between them.
+      className="relative w-full flex flex-col items-center justify-start px-6 pt-1"
+      initial={{ flexGrow: 1.6, opacity: 1 }}
       animate={{
-        flexBasis: ['58%', '58%', '32%'],
+        flexGrow: [1.6, 1.6, 0.85],
         opacity: [1, 1, 0.62],
       }}
       transition={{
@@ -179,7 +188,7 @@ const FromPanel: React.FC = () => {
         times: [0, HOLD / (HOLD + FLIP), 1],
         ease: FLIP_EASE,
       }}
-      style={{ flexGrow: 0, flexShrink: 0, minHeight: 0 }}
+      style={{ flexBasis: 0, flexShrink: 1, minHeight: 0 }}
     >
       <FromHeader />
       <FromChips />
@@ -189,10 +198,11 @@ const FromPanel: React.FC = () => {
 
 const FromHeader: React.FC = () => (
   <motion.div
-    className="flex items-center gap-3 mb-3"
+    className="flex items-center gap-3 mb-2"
     initial={{ opacity: 0, y: -6 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: 0.25, duration: 0.5 }}
+    style={{ marginTop: 0 }}
   >
     <div
       className="h-[2px] w-8"
@@ -352,12 +362,12 @@ const CentralPivot: React.FC = () => {
   return (
     <div
       className="relative w-full flex items-center justify-center"
-      style={{ height: 56, flex: '0 0 auto' }}
+      style={{ flex: '0 0 16vh', minHeight: 0 }}
     >
       <motion.svg
         viewBox="0 0 320 80"
-        className="h-full"
-        style={{ width: 'min(380px, 60vw)' }}
+        style={{ width: 'min(78vw, 74vh)', height: '16vh' }}
+        preserveAspectRatio="xMidYMid meet"
         aria-hidden="true"
         // The whole pivot rotates 180° during the flip. Combined with the
         // beam's own counter-rotation (handled in the inner group), the
@@ -390,15 +400,17 @@ const CentralPivot: React.FC = () => {
             ease: FLIP_EASE,
           }}
         >
-          {/* Beam */}
+          {/* Beam — thickened and brightened so it reads as load-bearing
+              at presentation distance. Uses primary text color rather than
+              a muted variant. */}
           <rect
-            x={40}
-            y={40}
-            width={240}
-            height={6}
-            rx={3}
-            fill="var(--color-text-muted)"
-            fillOpacity={0.55}
+            x={36}
+            y={38}
+            width={248}
+            height={10}
+            rx={5}
+            fill="var(--color-text)"
+            fillOpacity={0.92}
           />
           {/* End caps — the "weights" sitting on each end of the beam.
               Pre-flip the LEFT cap is bright (FROM bears the value);
@@ -406,15 +418,15 @@ const CentralPivot: React.FC = () => {
               We animate cap colors in concert with the rotation so the
               audience sees the value transfer. */}
           <motion.circle
-            cx={48}
+            cx={44}
             cy={43}
-            r={9}
+            r={13}
             initial={{
               fill: 'var(--color-primary)',
-              fillOpacity: 0.85,
+              fillOpacity: 0.9,
             }}
             animate={{
-              fillOpacity: [0.85, 0.85, 0.3, 0.3],
+              fillOpacity: [0.9, 0.9, 0.4, 0.4],
             }}
             transition={{
               duration: HOLD + FLIP,
@@ -424,15 +436,15 @@ const CentralPivot: React.FC = () => {
             style={{ filter: 'url(#inv-pivot-glow)' }}
           />
           <motion.circle
-            cx={272}
+            cx={276}
             cy={43}
-            r={9}
+            r={13}
             initial={{
               fill: 'var(--color-secondary)',
-              fillOpacity: 0.3,
+              fillOpacity: 0.35,
             }}
             animate={{
-              fillOpacity: [0.3, 0.3, 0.95, 0.95],
+              fillOpacity: [0.35, 0.35, 1, 1],
             }}
             transition={{
               duration: HOLD + FLIP,
@@ -443,25 +455,29 @@ const CentralPivot: React.FC = () => {
           />
         </motion.g>
 
-        {/* Fulcrum — stationary triangle beneath the beam. */}
+        {/* Fulcrum — stationary triangle beneath the beam. Stroke
+            thickened and brightened so the support reads at distance. */}
         <polygon
-          points="160,42 144,72 176,72"
+          points="160,40 140,76 180,76"
           fill="var(--color-bg-card)"
-          stroke="var(--color-text-muted)"
-          strokeOpacity={0.6}
-          strokeWidth={1.4}
+          stroke="var(--color-text)"
+          strokeOpacity={0.85}
+          strokeWidth={3}
+          strokeLinejoin="round"
         />
-        {/* Tiny arc indicator suggesting rotation — subtle, only animates
-            opacity during the flip so it doesn't compete with the beam. */}
+        {/* Arc indicator suggesting rotation — thickened stroke and
+            stronger color so the rotational cue reads at presentation
+            distance instead of near-disappearing. */}
         <motion.path
-          d="M 130 30 A 35 35 0 0 1 190 30"
+          d="M 126 28 A 38 38 0 0 1 194 28"
           fill="none"
           stroke="var(--color-secondary)"
           strokeOpacity={0}
-          strokeWidth={1.4}
-          strokeDasharray="3 4"
+          strokeWidth={4}
+          strokeLinecap="round"
+          strokeDasharray="5 6"
           initial={{ strokeOpacity: 0 }}
-          animate={{ strokeOpacity: [0, 0, 0.7, 0.45] }}
+          animate={{ strokeOpacity: [0, 0, 0.95, 0.9] }}
           transition={{
             duration: HOLD + FLIP,
             times: [0, HOLD / (HOLD + FLIP), 0.92, 1],
@@ -470,11 +486,11 @@ const CentralPivot: React.FC = () => {
         />
         {/* Arrowhead at the end of the arc, pointing toward the TO side. */}
         <motion.polygon
-          points="186,28 196,30 188,38"
+          points="188,22 202,30 190,40"
           fill="var(--color-secondary)"
           fillOpacity={0}
           initial={{ fillOpacity: 0 }}
-          animate={{ fillOpacity: [0, 0, 0.85, 0.65] }}
+          animate={{ fillOpacity: [0, 0, 1, 0.95] }}
           transition={{
             duration: HOLD + FLIP,
             times: [0, HOLD / (HOLD + FLIP), 0.92, 1],
@@ -495,9 +511,9 @@ const ToPanel: React.FC = () => {
   return (
     <motion.div
       className="relative w-full flex flex-col items-center justify-center px-6"
-      initial={{ flexBasis: '32%', opacity: 0.7 }}
+      initial={{ flexGrow: 0.85, opacity: 0.7 }}
       animate={{
-        flexBasis: ['32%', '32%', '58%'],
+        flexGrow: [0.85, 0.85, 1.6],
         opacity: [0.7, 0.7, 1],
       }}
       transition={{
@@ -505,7 +521,7 @@ const ToPanel: React.FC = () => {
         times: [0, HOLD / (HOLD + FLIP), 1],
         ease: FLIP_EASE,
       }}
-      style={{ flexGrow: 0, flexShrink: 0, minHeight: 0 }}
+      style={{ flexBasis: 0, flexShrink: 1, minHeight: 0 }}
     >
       <ToHeader />
       <DomainKnowledgeWordmark />
@@ -661,7 +677,7 @@ const DomainExamples: React.FC = () => {
 // reserve magenta exclusively for the king.
 const ToOtherChips: React.FC = () => {
   return (
-    <div className="flex flex-wrap items-end justify-center gap-3 md:gap-5 mt-5 max-w-[80vw]">
+    <div className="flex flex-wrap items-start justify-center gap-4 md:gap-7 mt-6 md:mt-8 max-w-[82vw]">
       {TO_OTHER_ITEMS.map((item, i) => (
         <ToOtherChip key={item.label} item={item} index={i} />
       ))}
@@ -674,37 +690,35 @@ const ToOtherChip: React.FC<{
   index: number;
 }> = ({ item, index }) => {
   // Chips fan in after the wordmark lands. Each gets a small per-index
-  // stagger so the trio reads left-to-right.
-  const chipStart =
-    POST_FLIP_LEAD + 0.15 + index * 0.12; // seconds from slide entrance
-  const total = HOLD + FLIP + 0.5; // generous tail
+  // stagger so the trio reads left-to-right. Use plain delay + duration
+  // so EVERY chip resolves to opacity:1 in its final state — no times-
+  // array gymnastics that could leave a chip stranded mid-curve.
+  const chipStart = POST_FLIP_LEAD + 0.15 + index * 0.12;
   return (
     <motion.div
       className="flex flex-col items-center"
       initial={{ opacity: 0, y: 10 }}
-      animate={{
-        opacity: [0, 0, 1],
-        y: [10, 10, 0],
-      }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{
-        duration: total,
-        times: [0, chipStart / total, Math.min(1, (chipStart + 0.5) / total)],
+        delay: chipStart,
+        duration: 0.5,
         ease: FLIP_EASE,
       }}
     >
       <div
-        className="px-4 py-2 rounded-full"
+        className="px-5 py-2.5 rounded-full"
         style={{
           background: 'var(--color-bg-card)',
-          border: '1.5px solid var(--color-primary)',
-          boxShadow: '0 0 12px color-mix(in srgb, var(--color-primary) 18%, transparent)',
+          border: '2px solid var(--color-primary)',
+          boxShadow: '0 0 18px color-mix(in srgb, var(--color-primary) 32%, transparent)',
         }}
       >
         <span
           className="font-semibold tracking-tight"
           style={{
             color: 'var(--color-primary)',
-            fontSize: 'clamp(0.95rem, 1.4vw, 1.25rem)',
+            fontSize: 'clamp(1.05rem, 1.6vw, 1.4rem)',
+            opacity: 1,
           }}
         >
           {item.label}
@@ -712,12 +726,12 @@ const ToOtherChip: React.FC<{
       </div>
       {item.sub && (
         <span
-          className="mt-1 text-center font-light italic"
+          className="mt-2 text-center font-normal italic"
           style={{
-            color: 'var(--color-text-muted)',
-            opacity: 0.85,
-            fontSize: 'clamp(0.7rem, 0.95vw, 0.9rem)',
-            maxWidth: 220,
+            color: 'var(--color-secondary)',
+            opacity: 1,
+            fontSize: 'clamp(1.0rem, 1.35vw, 1.25rem)',
+            maxWidth: 320,
           }}
         >
           {item.sub}

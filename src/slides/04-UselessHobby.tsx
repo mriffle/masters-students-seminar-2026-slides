@@ -50,14 +50,16 @@ import type { SlideProps } from '../types';
 const UselessHobby: React.FC<SlideProps> = () => {
   return (
     <SlideContainer>
-      <div className="w-full max-w-[92vw] h-full flex flex-col items-center justify-start gap-3">
-        <SlideTitle subtitle="Spinner · microLPC · the first persistent web chat">
-          How a "Useless" Hobby Got Me Hired
-        </SlideTitle>
+      <div className="w-full max-w-[92vw] h-full flex flex-col items-center justify-start gap-2">
+        <div className="-mb-6">
+          <SlideTitle subtitle="Spinner · microLPC · the first persistent web chat">
+            How a "Useless" Hobby Got Me Hired
+          </SlideTitle>
+        </div>
 
         {/* Connection diagram: LPC --(same family)--> Spinner -> chat-room */}
         <motion.div
-          className="w-full max-w-[88vw] h-[42vh]"
+          className="w-full max-w-[92vw] h-[50vh]"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
@@ -114,9 +116,12 @@ const UselessHobby: React.FC<SlideProps> = () => {
 //
 // Geometry uses a 1000 x 380 viewBox.
 const ConnectionDiagram: React.FC = () => {
-  const LPC = { x: 130, y: 110 };
-  const SPN = { x: 470, y: 110 };
-  const CHAT = { cx: 800, cy: 230, w: 320, h: 200 }; // box geometry
+  const LPC = { x: 160, y: 130 };
+  // SPN is shifted slightly left so its italic sub-label
+  // ("Seattle startup's web server") clears the left edge of the chat-room
+  // panel without being clipped.
+  const SPN = { x: 500, y: 130 };
+  const CHAT = { cx: 820, cy: 270, w: 340, h: 230 }; // box geometry
   // Anchor at the center of the chat-room box's left edge.
   const CHAT_LEFT = { x: CHAT.cx - CHAT.w / 2, y: CHAT.cy };
   // Where the family-bridge meets (midpoint between LPC and SPN).
@@ -124,7 +129,7 @@ const ConnectionDiagram: React.FC = () => {
 
   return (
     <svg
-      viewBox="0 0 1000 380"
+      viewBox="0 0 1000 420"
       className="w-full h-full"
       aria-label="Connection diagram: MUDs/LPC and Spinner/microLPC are the same language family; the speaker built a persistent chat-room system on Spinner."
     >
@@ -149,38 +154,39 @@ const ConnectionDiagram: React.FC = () => {
           nodes, with an italic muted label. Bracket itself is in --color-
           primary so the audience reads "these two nodes share a family". */}
       <motion.path
-        d={`M ${LPC.x} ${LPC.y + 28} C ${LPC.x} ${LPC.y + 64}, ${SPN.x} ${SPN.y + 64}, ${SPN.x} ${SPN.y + 28}`}
+        d={`M ${LPC.x} ${LPC.y + 60} C ${LPC.x} ${LPC.y + 96}, ${SPN.x} ${SPN.y + 96}, ${SPN.x} ${SPN.y + 60}`}
         fill="none"
         stroke="var(--color-primary)"
-        strokeWidth={1.6}
-        strokeOpacity={0.55}
+        strokeWidth={1.8}
+        strokeOpacity={0.7}
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.55 }}
+        animate={{ pathLength: 1, opacity: 0.7 }}
         transition={{ delay: 0.95, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
       />
       {/* Tiny tick descending from the bracket midpoint to anchor the label */}
       <motion.line
         x1={BRIDGE_MID.x}
-        y1={BRIDGE_MID.y + 60}
+        y1={BRIDGE_MID.y + 92}
         x2={BRIDGE_MID.x}
-        y2={BRIDGE_MID.y + 70}
+        y2={BRIDGE_MID.y + 102}
         stroke="var(--color-primary)"
-        strokeOpacity={0.55}
-        strokeWidth={1.6}
+        strokeOpacity={0.7}
+        strokeWidth={1.8}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.55 }}
+        animate={{ opacity: 0.7 }}
         transition={{ delay: 1.15, duration: 0.4 }}
       />
       <motion.text
         x={BRIDGE_MID.x}
-        y={BRIDGE_MID.y + 88}
+        y={BRIDGE_MID.y + 122}
         textAnchor="middle"
-        fill="var(--color-text-muted)"
-        fontSize={13}
+        fill="var(--color-text)"
+        fontSize={20}
+        fontWeight={500}
         fontStyle="italic"
         letterSpacing={1}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.85 }}
+        animate={{ opacity: 0.95 }}
         transition={{ delay: 1.2, duration: 0.5 }}
       >
         same language family
@@ -192,32 +198,34 @@ const ConnectionDiagram: React.FC = () => {
         d={`M ${SPN.x} ${SPN.y + 18} C ${SPN.x} ${SPN.y + 90}, ${CHAT_LEFT.x - 80} ${CHAT_LEFT.y - 40}, ${CHAT_LEFT.x} ${CHAT_LEFT.y}`}
         fill="none"
         stroke="var(--color-primary)"
-        strokeWidth={2}
-        strokeOpacity={0.55}
+        strokeWidth={2.4}
+        strokeOpacity={0.75}
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.55 }}
+        animate={{ pathLength: 1, opacity: 0.75 }}
         transition={{ delay: 1.35, duration: 0.75, ease: [0.4, 0, 0.2, 1] }}
       />
       {/* Arrowhead at the chat-room box edge */}
       <motion.polygon
         points={`${CHAT_LEFT.x - 10},${CHAT_LEFT.y - 5} ${CHAT_LEFT.x},${CHAT_LEFT.y} ${CHAT_LEFT.x - 10},${CHAT_LEFT.y + 5}`}
         fill="var(--color-primary)"
-        fillOpacity={0.7}
+        fillOpacity={0.9}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.7 }}
+        animate={{ opacity: 0.9 }}
         transition={{ delay: 2.0, duration: 0.4 }}
       />
-      {/* Italic muted annotation along the connector */}
+      {/* Italic annotation along the connector. Centered above the
+          chat-room panel so it does not collide with it. */}
       <motion.text
-        x={(SPN.x + CHAT_LEFT.x) / 2 - 18}
-        y={(SPN.y + CHAT_LEFT.y) / 2 - 4}
+        x={CHAT.cx}
+        y={CHAT.cy - CHAT.h / 2 - 22}
         textAnchor="middle"
-        fill="var(--color-text-muted)"
-        fontSize={12}
+        fill="var(--color-text)"
+        fontSize={20}
+        fontWeight={500}
         fontStyle="italic"
         letterSpacing={1}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.8 }}
+        animate={{ opacity: 0.95 }}
         transition={{ delay: 1.7, duration: 0.5 }}
       >
         baked persistence into webapps
@@ -249,9 +257,9 @@ const ConnectionDiagram: React.FC = () => {
         />
         <text
           x={LPC.x}
-          y={LPC.y - 28}
+          y={LPC.y - 30}
           fill="var(--color-primary)"
-          fontSize={15}
+          fontSize={20}
           fontWeight={700}
           textAnchor="middle"
           letterSpacing={1.5}
@@ -261,12 +269,14 @@ const ConnectionDiagram: React.FC = () => {
         </text>
         <text
           x={LPC.x}
-          y={LPC.y + 30}
-          fill="var(--color-text-muted)"
-          fontSize={11}
+          y={LPC.y + 36}
+          fill="var(--color-text)"
+          fontSize={18}
+          fontWeight={500}
           fontStyle="italic"
           textAnchor="middle"
           letterSpacing={1}
+          opacity={0.9}
         >
           the obsession
         </text>
@@ -297,10 +307,10 @@ const ConnectionDiagram: React.FC = () => {
         />
         <text
           x={SPN.x}
-          y={SPN.y - 28}
+          y={SPN.y - 30}
           fill="var(--color-text)"
-          fontSize={15}
-          fontWeight={600}
+          fontSize={20}
+          fontWeight={700}
           textAnchor="middle"
           letterSpacing={1.2}
         >
@@ -308,12 +318,14 @@ const ConnectionDiagram: React.FC = () => {
         </text>
         <text
           x={SPN.x}
-          y={SPN.y + 30}
-          fill="var(--color-text-muted)"
-          fontSize={11}
+          y={SPN.y + 36}
+          fill="var(--color-text)"
+          fontSize={16}
+          fontWeight={500}
           fontStyle="italic"
           textAnchor="middle"
-          letterSpacing={1}
+          letterSpacing={0.4}
+          opacity={0.9}
         >
           Seattle startup's web server
         </text>
@@ -587,33 +599,38 @@ const GapTimeline: React.FC = () => {
         x2={xRight}
         y2={yAxis}
         stroke="var(--color-text-muted)"
-        strokeOpacity={0.45}
-        strokeWidth={1.5}
+        strokeOpacity={0.7}
+        strokeWidth={1.8}
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.45 }}
+        animate={{ pathLength: 1, opacity: 0.7 }}
         transition={{ delay: 0.1, duration: 0.9, ease: [0.4, 0, 0.2, 1] }}
       />
       {/* Backbone arrowhead on the right (time flows forward) */}
       <motion.polygon
         points={`${xRight - 8},${yAxis - 4} ${xRight},${yAxis} ${xRight - 8},${yAxis + 4}`}
         fill="var(--color-text-muted)"
-        fillOpacity={0.55}
+        fillOpacity={0.8}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.55 }}
+        animate={{ opacity: 0.8 }}
         transition={{ delay: 1.0, duration: 0.4 }}
       />
 
-      {/* Italic muted annotation across the gap, above the backbone */}
+      {/* Italic annotation across the gap, above the backbone. Anchored to
+          the right side of the gap (just left of the social-network cluster)
+          so it does not collide with the "speaker's chat rooms" marker label
+          on the left. Slightly tighter letter spacing keeps it inside the
+          available gap width. */}
       <motion.text
-        x={(SPEAKER_X + SOCIAL_X_FRIENDSTER) / 2}
-        y={yAxis - 28}
-        textAnchor="middle"
-        fill="var(--color-text-muted)"
-        fontSize={12}
+        x={SOCIAL_X_FRIENDSTER - 20}
+        y={yAxis - 30}
+        textAnchor="end"
+        fill="var(--color-text)"
+        fontSize={18}
+        fontWeight={500}
         fontStyle="italic"
-        letterSpacing={1.2}
+        letterSpacing={0.6}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.85 }}
+        animate={{ opacity: 0.95 }}
         transition={{ delay: 0.85, duration: 0.5 }}
       >
         years of empty space before anything else like it
@@ -655,10 +672,10 @@ const GapTimeline: React.FC = () => {
         />
         <text
           x={SPEAKER_X}
-          y={yAxis - 24}
+          y={yAxis - 26}
           textAnchor="middle"
           fill="var(--color-primary)"
-          fontSize={13}
+          fontSize={18}
           fontWeight={700}
           letterSpacing={1.2}
           filter="url(#timeline-glow)"
@@ -667,12 +684,14 @@ const GapTimeline: React.FC = () => {
         </text>
         <text
           x={SPEAKER_X}
-          y={yAxis + 32}
+          y={yAxis + 36}
           textAnchor="middle"
-          fill="var(--color-text-muted)"
-          fontSize={11}
+          fill="var(--color-text)"
+          fontSize={16}
+          fontWeight={500}
           fontStyle="italic"
           letterSpacing={1}
+          opacity={0.9}
         >
           late 1990s
         </text>
@@ -710,23 +729,25 @@ const GapTimeline: React.FC = () => {
           />
           <text
             x={m.x}
-            y={yAxis + 26}
+            y={yAxis + 28}
             textAnchor="middle"
-            fill="var(--color-text-muted)"
-            fontSize={11}
-            fontWeight={500}
+            fill="var(--color-text)"
+            fontSize={16}
+            fontWeight={600}
             letterSpacing={1}
+            opacity={0.9}
           >
             {m.label}
           </text>
           <text
             x={m.x}
-            y={yAxis + 40}
+            y={yAxis + 48}
             textAnchor="middle"
-            fill="var(--color-text-muted)"
-            fillOpacity={0.65}
-            fontSize={10}
+            fill="var(--color-text)"
+            fillOpacity={0.85}
+            fontSize={15}
             fontStyle="italic"
+            fontWeight={500}
             letterSpacing={1}
           >
             {m.date}

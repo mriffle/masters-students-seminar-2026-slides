@@ -78,16 +78,16 @@ import type { SlideProps } from '../types';
 // Geometry — viewBox 1000 x 560
 // ---------------------------------------------------------------------------
 
-const VB = { w: 1000, h: 560 };
+const VB = { w: 1000, h: 420 };
 
 // Floor line — sits low, gives ground-truth to the lever and fulcrum
-const FLOOR_Y = 470;
+const FLOOR_Y = 360;
 
 // Fulcrum — placed left-of-center so the long output side has lots of room
 // to extend to the right.
 const FULCRUM = {
   cx: 280,
-  apexY: 290,        // where the beam pivots
+  apexY: 220,        // where the beam pivots
   baseW: 200,        // wide trapezoid base on the floor
   topW: 36,          // narrow at the apex
 };
@@ -132,23 +132,23 @@ const EFFORT_FIG = { headR: 7, bodyH: 26, armSpan: 12 };
 const ACTION_ITEMS = [
   {
     keyword: 'DOMAIN',
-    detail: 'Go deep on at least one you find genuinely interesting',
+    detail: 'Go deep on one you find genuinely interesting',
   },
   {
     keyword: 'CS FUNDAMENTALS',
-    detail: 'Complexity, data structures, algorithmic thinking',
+    detail: 'Complexity, data structures, algorithms',
   },
   {
     keyword: 'DS FUNDAMENTALS',
-    detail: 'Methods, tests, viz, regularization, cross-validation',
+    detail: 'Methods, tests, viz, regularization, CV',
   },
   {
     keyword: 'JUDGMENT',
-    detail: 'Using AI tools — do I know why this output is good?',
+    detail: 'Do I know why this AI output is good?',
   },
   {
     keyword: 'EXPLAINING',
-    detail: '"Did you actually understand this?" is coming',
+    detail: '"Did you actually understand this?"',
   },
 ];
 
@@ -163,7 +163,7 @@ const OptimisticFlip: React.FC<SlideProps> = () => {
         Your Lever Is Bigger Than Ever
       </SlideTitle>
 
-      <div className="relative w-full max-w-[94vw] h-[72vh] flex items-center justify-center">
+      <div className="relative w-full max-w-[90vw] h-[52vh] flex items-start justify-center mt-[-1vh]">
         <svg
           viewBox={`0 0 ${VB.w} ${VB.h}`}
           className="w-full h-full"
@@ -468,10 +468,11 @@ const OptimisticFlip: React.FC<SlideProps> = () => {
                     strokeWidth={2.2}
                     filter="url(#of-primary-glow)"
                   />
-                  {/* "your effort" label — tucked beneath the platform */}
+                  {/* "your effort" label — sits ABOVE the figure's head so it
+                      doesn't collide with the fulcrum/platform/figure below. */}
                   <text
                     x={figCx}
-                    y={platTop + EFFORT_PLATFORM_H + 22}
+                    y={feetY - 2 - EFFORT_FIG.bodyH - EFFORT_FIG.headR * 2 - 14}
                     textAnchor="middle"
                     fontSize={11}
                     fontWeight={800}
@@ -490,166 +491,114 @@ const OptimisticFlip: React.FC<SlideProps> = () => {
           </motion.g>
 
           {/* ============================================================ */}
-          {/* FOUNDATION — five action items as success-green chips        */}
-          {/* sitting on the floor BENEATH the fulcrum's base.              */}
-          {/*                                                              */}
-          {/* The chips are arranged in a horizontal strip spanning roughly*/}
-          {/* the full width of the slide, with a connector line linking   */}
-          {/* the fulcrum's base to the strip — so the chips read clearly  */}
-          {/* as "the foundation supporting the entire mechanism" AND as   */}
-          {/* a take-home checklist on their own.                           */}
+          {/* FOUNDATION HINT — a small dashed connector below the fulcrum  */}
+          {/* points down to the HTML chip strip rendered outside the SVG, */}
+          {/* visually marking those chips AS the fulcrum's foundation.    */}
           {/* ============================================================ */}
-          {(() => {
-            const stripY = FLOOR_Y + 22;        // top of the chip strip
-            const chipH = 56;
-            const chipGap = 12;
-            const stripPad = 50;
-            const stripW = VB.w - stripPad * 2;
-            const chipW =
-              (stripW - chipGap * (ACTION_ITEMS.length - 1)) / ACTION_ITEMS.length;
-
-            // Foundation backplate — a faint success-tinted band so the
-            // chips read collectively as a single foundation, not five
-            // disconnected items.
-            return (
-              <>
-                <motion.rect
-                  x={stripPad - 8}
-                  y={stripY - 6}
-                  width={stripW + 16}
-                  height={chipH + 12}
-                  rx={10}
-                  fill="var(--color-success)"
-                  fillOpacity={0.04}
-                  stroke="var(--color-success)"
-                  strokeOpacity={0.20}
-                  strokeWidth={1}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.6, duration: 0.5 }}
-                />
-
-                {/* "the foundation" connector — a dashed line from the
-                    fulcrum's base center down into the chip strip,
-                    visually marking the chips AS the fulcrum's foundation. */}
-                <motion.line
-                  x1={FULCRUM.cx}
-                  y1={FLOOR_Y + 1}
-                  x2={FULCRUM.cx}
-                  y2={stripY - 6}
-                  stroke="var(--color-success)"
-                  strokeOpacity={0.55}
-                  strokeWidth={1.2}
-                  strokeDasharray="3 4"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ delay: 1.7, duration: 0.5 }}
-                />
-
-                {/* "THE FOUNDATION" caption — sits to the left of the strip,
-                    quiet, in success at low opacity, marking the chips'
-                    role both as part of the lever AND as the checklist. */}
-                <motion.text
-                  x={stripPad}
-                  y={stripY - 14}
-                  fontSize={10}
-                  fontWeight={800}
-                  fill="var(--color-success)"
-                  fillOpacity={0.85}
-                  style={{
-                    fontFamily: 'Inter, system-ui, sans-serif',
-                    letterSpacing: '0.34em',
-                    textTransform: 'uppercase',
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.85 }}
-                  transition={{ delay: 1.75, duration: 0.4 }}
-                >
-                  the foundation — invest here
-                </motion.text>
-
-                {/* The five action chips — staggered in left-to-right */}
-                {ACTION_ITEMS.map((item, i) => {
-                  const x = stripPad + i * (chipW + chipGap);
-                  return (
-                    <motion.g
-                      key={`action-${i}`}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        delay: 1.85 + i * 0.12,
-                        duration: 0.45,
-                        ease: [0.4, 0, 0.2, 1],
-                      }}
-                    >
-                      {/* Chip background */}
-                      <rect
-                        x={x}
-                        y={stripY}
-                        width={chipW}
-                        height={chipH}
-                        rx={8}
-                        fill="var(--color-bg-card)"
-                        stroke="var(--color-success)"
-                        strokeOpacity={0.85}
-                        strokeWidth={1.6}
-                        filter="url(#of-success-glow)"
-                      />
-                      {/* Number — small, in success at low opacity, top-left */}
-                      <text
-                        x={x + 10}
-                        y={stripY + 16}
-                        fontSize={9}
-                        fontWeight={800}
-                        fill="var(--color-success)"
-                        fillOpacity={0.85}
-                        style={{
-                          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                          letterSpacing: '0.10em',
-                        }}
-                      >
-                        0{i + 1}
-                      </text>
-                      {/* Keyword — bold, success-green, the action header */}
-                      <text
-                        x={x + chipW / 2}
-                        y={stripY + 26}
-                        textAnchor="middle"
-                        fontSize={12}
-                        fontWeight={900}
-                        fill="var(--color-success)"
-                        style={{
-                          fontFamily: 'Inter, system-ui, sans-serif',
-                          letterSpacing: '0.10em',
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        {item.keyword}
-                      </text>
-                      {/* Detail — one short line, in muted text so the
-                          chips remain readable as a checklist without
-                          competing with the lever. */}
-                      <text
-                        x={x + chipW / 2}
-                        y={stripY + 44}
-                        textAnchor="middle"
-                        fontSize={10}
-                        fill="var(--color-text)"
-                        fillOpacity={0.92}
-                        style={{
-                          fontFamily: 'Inter, system-ui, sans-serif',
-                          letterSpacing: '0.01em',
-                        }}
-                      >
-                        {item.detail}
-                      </text>
-                    </motion.g>
-                  );
-                })}
-              </>
-            );
-          })()}
+          <motion.line
+            x1={FULCRUM.cx}
+            y1={FLOOR_Y + 1}
+            x2={FULCRUM.cx}
+            y2={VB.h - 6}
+            stroke="var(--color-success)"
+            strokeOpacity={0.55}
+            strokeWidth={1.2}
+            strokeDasharray="3 4"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ delay: 1.55, duration: 0.5 }}
+          />
         </svg>
+      </div>
+
+      {/* ============================================================ */}
+      {/* FOUNDATION CHIP STRIP — five action items as HTML chips       */}
+      {/* rendered below the SVG so they're guaranteed in-flow with    */}
+      {/* the slide layout (no SVG clipping). Flexbox enforces equal   */}
+      {/* spacing for all five chips.                                   */}
+      {/* ============================================================ */}
+      <div className="w-full max-w-[90vw] mt-[1vh] flex flex-col items-stretch px-[1vw]">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.6, duration: 0.4 }}
+          className="mb-[0.6vh] text-center"
+          style={{
+            color: 'var(--color-success)',
+            opacity: 0.95,
+            fontFamily: 'Inter, system-ui, sans-serif',
+            letterSpacing: '0.34em',
+            textTransform: 'uppercase',
+            fontWeight: 800,
+            fontSize: '1.25vh',
+          }}
+        >
+          The Foundation — Invest Here
+        </motion.div>
+
+        <div className="flex flex-row items-stretch justify-between gap-[1vw] w-full">
+          {ACTION_ITEMS.map((item, i) => (
+            <motion.div
+              key={`action-${i}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 1.7 + i * 0.08,
+                duration: 0.4,
+                ease: [0.4, 0, 0.2, 1],
+              }}
+              className="flex-1 min-w-0 rounded-lg flex flex-col"
+              style={{
+                background: 'var(--color-bg-card)',
+                border: '1.5px solid var(--color-success)',
+                padding: '1vh 0.9vw',
+                boxShadow: '0 0 12px color-mix(in srgb, var(--color-success) 25%, transparent)',
+              }}
+            >
+              <div
+                style={{
+                  color: 'var(--color-success)',
+                  opacity: 1,
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                  fontSize: '1.1vh',
+                  fontWeight: 800,
+                  letterSpacing: '0.10em',
+                  marginBottom: '0.3vh',
+                }}
+              >
+                0{i + 1}
+              </div>
+              <div
+                className="text-center"
+                style={{
+                  color: 'var(--color-success)',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  fontSize: '1.55vh',
+                  fontWeight: 900,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  marginBottom: '0.5vh',
+                  lineHeight: 1.1,
+                }}
+              >
+                {item.keyword}
+              </div>
+              <div
+                className="text-center"
+                style={{
+                  color: 'var(--color-text)',
+                  opacity: 1,
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  fontSize: '1.3vh',
+                  letterSpacing: '0.01em',
+                  lineHeight: 1.25,
+                }}
+              >
+                {item.detail}
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </SlideContainer>
   );

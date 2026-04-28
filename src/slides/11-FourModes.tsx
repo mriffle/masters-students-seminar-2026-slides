@@ -13,11 +13,9 @@ import type { SlideProps } from '../types';
  * domain breadth a visible payoff inside the modes structure.
  *
  * Layout:
- *   - Three-tier stack preserving 1 -> 2 -> 3 -> 4 reading order:
- *       Row 1: Modes 1 and 2 side-by-side (two equal cards).
- *       Row 2: Mode 3, full width -- visibly the expanded card, room for
- *              the six domain chips.
- *       Row 3: Mode 4, full width.
+ *   - 2x2 card grid filling the available vertical space. Mode 3 spans
+ *     both rows in the right column, giving its six-domain fan room to
+ *     breathe; Modes 1, 2, 4 stack in the left column.
  *   - Card vocabulary matches slide 07 (--color-bg-card, color-mix muted
  *     borders, rounded-lg, generous padding).
  *   - Tagline anchors the bottom: "The toolkit travels. The domain doesn't."
@@ -40,7 +38,7 @@ const FourModes: React.FC<SlideProps> = () => {
           Four Modes of Work
         </SlideTitle>
 
-        <div className="w-full max-w-[90vw] flex flex-col gap-4 mt-1">
+        <div className="w-full max-w-[90vw] flex-1 flex flex-col gap-[2vh] mt-1 min-h-0">
           <ModeGrid />
           <Tagline />
         </div>
@@ -50,52 +48,50 @@ const FourModes: React.FC<SlideProps> = () => {
 };
 
 // ---------------------------------------------------------------------------
-// ModeGrid -- three-tier layout preserving 1 -> 2 -> 3 -> 4 reading order
+// ModeGrid -- 2x2 layout. Mode 3 spans both rows on the right; Modes 1, 2, 4
+// stack on the left, preserving the 1 -> 2 -> 4 reading order while keeping
+// Mode 3 visibly the taller "expanded" card with room for its six-domain fan.
 // ---------------------------------------------------------------------------
-//
-// Three rows:
-//   Row 1: Modes 1 and 2 side-by-side (two equal cards).
-//   Row 2: Mode 3, full width -- visibly the expanded card, with all six
-//          domain chips spread across its width.
-//   Row 3: Mode 4, full width.
-//
-// This satisfies (a) the 1 -> 2 -> 3 -> 4 reading order, and (b) Mode 3 is
-// visibly the wider/expanded card where domain breadth becomes visible.
 const ModeGrid: React.FC = () => {
   return (
-    <div className="flex flex-col gap-4">
-      {/* Row 1: Modes 1 and 2 side-by-side */}
-      <div className="grid grid-cols-2 gap-4">
-        <StandardModeCard
-          number="1"
-          title="Generalized web apps"
-          description={
-            <>
-              For data viz, sharing, analysis. Used by research labs.{' '}
-              <ProjectName>Limelight</ProjectName> (proteomics) and{' '}
-              <ProjectName>Proxl</ProjectName> (cross-linking proteomics).
-            </>
-          }
-          delay={0.35}
-        />
-        <StandardModeCard
-          number="2"
-          title="Automated processing workflows"
-          description={
-            <>
-              Pipelines in <ProjectName>Nextflow</ProjectName>. Push a button,
-              raw data goes in, processed results come out the same way every
-              time.
-            </>
-          }
-          delay={0.5}
-        />
+    <div
+      className="grid grid-cols-2 grid-rows-3 gap-[1.6vh] gap-x-[1.2vw]"
+      style={{ height: 'min(70vh, 720px)' }}
+    >
+      {/* Left column, top: Mode 1 */}
+      <StandardModeCard
+        number="1"
+        title="Generalized web apps"
+        description={
+          <>
+            For data viz, sharing, analysis. Used by research labs.{' '}
+            <ProjectName>Limelight</ProjectName> (proteomics) and{' '}
+            <ProjectName>Proxl</ProjectName> (cross-linking proteomics).
+          </>
+        }
+        delay={0.35}
+      />
+
+      {/* Right column, spans all three rows: Mode 3 with domain chips */}
+      <div className="row-span-3 col-start-2 row-start-1 min-h-0">
+        <Mode3Card />
       </div>
 
-      {/* Row 2: Mode 3, full width, with domain chips inside */}
-      <Mode3Card />
+      {/* Left column, middle: Mode 2 */}
+      <StandardModeCard
+        number="2"
+        title="Automated processing workflows"
+        description={
+          <>
+            Pipelines in <ProjectName>Nextflow</ProjectName>. Push a button,
+            raw data goes in, processed results come out the same way every
+            time.
+          </>
+        }
+        delay={0.5}
+      />
 
-      {/* Row 3: Mode 4, full width */}
+      {/* Left column, bottom: Mode 4 */}
       <StandardModeCard
         number="4"
         title="Open-source algorithms and software"
@@ -122,24 +118,24 @@ const StandardModeCard: React.FC<{
 }> = ({ number, title, description, delay }) => {
   return (
     <motion.div
-      className="rounded-lg flex flex-col gap-1.5"
+      className="rounded-lg flex flex-col justify-center gap-[1.2vh] h-full min-h-0"
       style={{
         background: 'var(--color-bg-card)',
         border: '1px solid color-mix(in srgb, var(--color-text-muted) 24%, transparent)',
-        padding: 'clamp(0.95rem, 1.6vw, 1.25rem) clamp(1.1rem, 1.9vw, 1.5rem)',
+        padding: 'clamp(1.1rem, 2.2vw, 1.9rem) clamp(1.3rem, 2.4vw, 2.1rem)',
       }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
     >
-      <div className="flex items-baseline gap-3">
+      <div className="flex items-baseline gap-3 flex-wrap">
         <span
           className="font-mono"
           style={{
             color: 'var(--color-primary)',
-            fontSize: 'clamp(0.7rem, 0.9vw, 0.85rem)',
-            letterSpacing: '0.18em',
-            opacity: 0.7,
+            fontSize: 'clamp(0.78rem, 1vw, 0.95rem)',
+            letterSpacing: '0.2em',
+            opacity: 0.75,
           }}
         >
           MODE {number}
@@ -148,7 +144,7 @@ const StandardModeCard: React.FC<{
           className="font-semibold leading-snug"
           style={{
             color: 'var(--color-text)',
-            fontSize: 'clamp(1rem, 1.25vw, 1.2rem)',
+            fontSize: 'clamp(1.15rem, 1.55vw, 1.45rem)',
           }}
         >
           {title}
@@ -158,7 +154,7 @@ const StandardModeCard: React.FC<{
         className="leading-snug"
         style={{
           color: 'var(--color-text-muted)',
-          fontSize: 'clamp(0.82rem, 1vw, 0.98rem)',
+          fontSize: 'clamp(0.95rem, 1.2vw, 1.12rem)',
         }}
       >
         {description}
@@ -177,24 +173,31 @@ const StandardModeCard: React.FC<{
 // This is where "domain breadth" becomes visible inside the modes
 // structure.
 const Mode3Card: React.FC = () => {
-  const domains = [
-    'Radiation exposure',
-    "Alzheimer's",
-    "Parkinson's",
-    'Ocean / environmental proteomics',
-    'Pharmacology',
-    'Aging',
+  // Six domain chips arranged as a radial fan around a center node.
+  // Positions are percentages of the fan area (centered on 50/50).
+  // Angles distribute the six chips evenly around the center.
+  const domains: { label: string; angleDeg: number }[] = [
+    { label: 'Radiation exposure', angleDeg: 210 },
+    { label: "Alzheimer's", angleDeg: 270 },
+    { label: "Parkinson's", angleDeg: 330 },
+    { label: 'Ocean / environmental proteomics', angleDeg: 30 },
+    { label: 'Pharmacology', angleDeg: 90 },
+    { label: 'Aging', angleDeg: 150 },
   ];
+
+  // Radius of the chip ring, expressed as percentages of the fan box.
+  const radiusXPct = 34;
+  const radiusYPct = 36;
 
   return (
     <motion.div
-      className="relative rounded-lg flex flex-col gap-3 overflow-hidden"
+      className="relative rounded-lg flex flex-col overflow-hidden h-full min-h-0"
       style={{
         background: 'var(--color-bg-card)',
         border: '1.5px solid color-mix(in srgb, var(--color-primary) 38%, transparent)',
         boxShadow:
           '0 0 0 1px color-mix(in srgb, var(--color-primary) 12%, transparent), 0 0 48px -16px color-mix(in srgb, var(--color-primary) 28%, transparent)',
-        padding: 'clamp(1.1rem, 1.9vw, 1.5rem) clamp(1.25rem, 2.1vw, 1.7rem)',
+        padding: 'clamp(1.2rem, 2vw, 1.7rem) clamp(1.3rem, 2.2vw, 1.8rem)',
       }}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -216,8 +219,8 @@ const Mode3Card: React.FC = () => {
           className="font-mono"
           style={{
             color: 'var(--color-primary)',
-            fontSize: 'clamp(0.7rem, 0.9vw, 0.85rem)',
-            letterSpacing: '0.18em',
+            fontSize: 'clamp(0.78rem, 1vw, 0.95rem)',
+            letterSpacing: '0.2em',
             opacity: 0.85,
           }}
         >
@@ -227,7 +230,7 @@ const Mode3Card: React.FC = () => {
           className="font-semibold leading-snug"
           style={{
             color: 'var(--color-text)',
-            fontSize: 'clamp(1.05rem, 1.35vw, 1.3rem)',
+            fontSize: 'clamp(1.2rem, 1.6vw, 1.5rem)',
           }}
         >
           Direct work on research problems
@@ -235,42 +238,140 @@ const Mode3Card: React.FC = () => {
       </div>
 
       <p
-        className="leading-snug"
+        className="leading-snug mt-1"
         style={{
           color: 'var(--color-text-muted)',
-          fontSize: 'clamp(0.85rem, 1.05vw, 1rem)',
+          fontSize: 'clamp(0.95rem, 1.2vw, 1.12rem)',
         }}
       >
         From radiation to aging biology.
       </p>
 
-      {/* Domain chips -- the "fan" of six scientific domains. This is the
-          visible payoff of the merged 2.4 (Domain Breadth) slide. */}
-      <div className="flex flex-wrap gap-2 mt-1">
-        {domains.map((domain, i) => (
-          <DomainChip key={domain} label={domain} delay={0.75 + i * 0.07} />
-        ))}
+      {/* Radial-fan domain visual. The six chips ring a primary-colored
+          center node, with thin connection lines radiating outward. This
+          fills the right column and makes the domain breadth payoff
+          visually dominant. */}
+      <div className="relative flex-1 mt-3 min-h-0">
+        {/* Connection lines: SVG sits behind the chips and the center node. */}
+        <svg
+          aria-hidden
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
+          {domains.map(({ label, angleDeg }, i) => {
+            const rad = (angleDeg * Math.PI) / 180;
+            const x = 50 + radiusXPct * Math.cos(rad);
+            const y = 50 + radiusYPct * Math.sin(rad);
+            return (
+              <motion.line
+                key={`line-${label}`}
+                x1={50}
+                y1={50}
+                x2={x}
+                y2={y}
+                stroke="color-mix(in srgb, var(--color-primary) 30%, transparent)"
+                strokeWidth={0.25}
+                vectorEffect="non-scaling-stroke"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ delay: 0.9 + i * 0.07, duration: 0.45 }}
+              />
+            );
+          })}
+          {/* Faint outer ring suggesting the orbit of the chips */}
+          <ellipse
+            cx={50}
+            cy={50}
+            rx={radiusXPct}
+            ry={radiusYPct}
+            fill="none"
+            stroke="color-mix(in srgb, var(--color-primary) 14%, transparent)"
+            strokeWidth={0.2}
+            strokeDasharray="0.6 0.9"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+
+        {/* Center node: the convergence point. Represents the "toolkit". */}
+        <motion.div
+          className="absolute rounded-full flex items-center justify-center"
+          style={{
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 'clamp(3.2rem, 5vw, 4.6rem)',
+            height: 'clamp(3.2rem, 5vw, 4.6rem)',
+            background: 'color-mix(in srgb, var(--color-primary) 14%, transparent)',
+            border: '1.5px solid color-mix(in srgb, var(--color-primary) 55%, transparent)',
+            boxShadow:
+              '0 0 32px -6px color-mix(in srgb, var(--color-primary) 45%, transparent)',
+          }}
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, duration: 0.45 }}
+        >
+          <span
+            style={{
+              color: 'var(--color-primary)',
+              fontSize: 'clamp(0.7rem, 0.9vw, 0.85rem)',
+              letterSpacing: '0.16em',
+              fontWeight: 600,
+              textAlign: 'center',
+              lineHeight: 1.1,
+            }}
+          >
+            TOOLKIT
+          </span>
+        </motion.div>
+
+        {/* Domain chips positioned around the center. */}
+        {domains.map(({ label, angleDeg }, i) => {
+          const rad = (angleDeg * Math.PI) / 180;
+          const xPct = 50 + radiusXPct * Math.cos(rad);
+          const yPct = 50 + radiusYPct * Math.sin(rad);
+          return (
+            <DomainChip
+              key={label}
+              label={label}
+              xPct={xPct}
+              yPct={yPct}
+              delay={1.1 + i * 0.08}
+            />
+          );
+        })}
       </div>
     </motion.div>
   );
 };
 
-const DomainChip: React.FC<{ label: string; delay: number }> = ({ label, delay }) => {
+const DomainChip: React.FC<{
+  label: string;
+  xPct: number;
+  yPct: number;
+  delay: number;
+}> = ({ label, xPct, yPct, delay }) => {
   return (
     <motion.span
-      className="inline-flex items-center rounded-full"
+      className="absolute inline-flex items-center justify-center rounded-full text-center"
       style={{
+        left: `${xPct}%`,
+        top: `${yPct}%`,
+        transform: 'translate(-50%, -50%)',
         color: 'var(--color-text)',
-        background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)',
-        border: '1px solid color-mix(in srgb, var(--color-primary) 32%, transparent)',
-        padding: 'clamp(0.28rem, 0.45vw, 0.4rem) clamp(0.7rem, 1vw, 0.95rem)',
-        fontSize: 'clamp(0.72rem, 0.88vw, 0.85rem)',
+        background: 'color-mix(in srgb, var(--color-primary) 12%, transparent)',
+        border: '1.5px solid color-mix(in srgb, var(--color-primary) 42%, transparent)',
+        padding: 'clamp(0.55rem, 0.9vw, 0.85rem) clamp(1rem, 1.6vw, 1.5rem)',
+        fontSize: 'clamp(0.92rem, 1.15vw, 1.1rem)',
         fontWeight: 500,
-        opacity: 0.92,
+        maxWidth: '38%',
+        lineHeight: 1.15,
+        boxShadow:
+          '0 0 0 1px color-mix(in srgb, var(--color-primary) 8%, transparent)',
       }}
-      initial={{ opacity: 0, scale: 0.85 }}
-      animate={{ opacity: 0.92, scale: 1 }}
-      transition={{ delay, duration: 0.35 }}
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay, duration: 0.4 }}
     >
       {label}
     </motion.span>

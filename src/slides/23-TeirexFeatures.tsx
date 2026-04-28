@@ -85,7 +85,11 @@ import type { SlideProps } from '../types';
 // CANONICAL TEI-REX GEOMETRY — REUSED FROM SLIDE 16
 // ---------------------------------------------------------------------------
 
-const TEIREX_VB = { w: 1000, h: 540 };
+// Tightened viewBox: width unchanged so horizontal pacing matches slide 16,
+// but height shortened (540 -> 460) to remove the dead zone between rows
+// and guarantee both Path A and Path B fit fully on a 1920x1080 slide
+// after the SVG is laid out via preserveAspectRatio="xMidYMid meet".
+const TEIREX_VB = { w: 1000, h: 460 };
 
 /**
  * Skin-swab sample node — INPUT.
@@ -95,7 +99,7 @@ const TEIREX_VB = { w: 1000, h: 540 };
  */
 const SKIN = {
   cx: 130,
-  cy: 270,
+  cy: 230,
   w: 150,
   h: 70,
   rx: 14,
@@ -103,17 +107,19 @@ const SKIN = {
 };
 
 /**
- * Two parallel classifier black boxes. Same w/h/rx as slide 16's CLASSIFIER
- * (280 x 200, rx 16) so the silhouette is recognized. Slightly compressed
- * vertically to fit two stacked instances within the viewBox.
+ * Two parallel classifier black boxes. Same w/rx as slide 16's CLASSIFIER
+ * (260 wide, rx 16) so the silhouette is recognized. Vertically compressed
+ * (h: 170 -> 140) so both paths fit within the tightened viewBox AND there
+ * is room above each box for the PATH A / PATH B header label (moved out
+ * of the box interior to fix the overlap with DNA REPAIR cluster label).
  */
 const CLASSIFIER = {
   w: 260,
-  h: 170,
+  h: 140,
   rx: 16,
   cx: 470,
-  cyA: 150, // Path A — top
-  cyB: 390, // Path B — bottom
+  cyA: 110, // Path A — top
+  cyB: 340, // Path B — bottom
 };
 
 /** Accuracy band plot rectangles — one per path, on the right. */
@@ -121,11 +127,11 @@ const BAND = {
   left: 660,
   right: 980,
   // Path A — mediocre
-  topA: 70,
-  bottomA: 230,
+  topA: 50,
+  bottomA: 190,
   // Path B — great
-  topB: 310,
-  bottomB: 470,
+  topB: 280,
+  bottomB: 420,
 };
 
 // ---------------------------------------------------------------------------
@@ -251,11 +257,17 @@ interface PathwayCluster {
   edges: Array<[number, number]>;
 }
 
+// Pathway cluster layout. Top-row clusters (DNA repair, oxidative stress)
+// have cy values pulled INWARD (away from the box top) by ~12px vs the
+// previous layout, so their labels — which hug the cluster's topmost
+// node from just above — can never clip the Path B classifier's top
+// edge. Apoptosis (bottom-row) is correspondingly pulled inward from
+// the bottom edge to keep the cluster vertically balanced.
 const PATHWAYS: PathwayCluster[] = [
   {
     label: 'DNA repair',
     cx: -75,
-    cy: -35,
+    cy: -22,
     nodes: [
       { dx: -18, dy: -12, r: 4 },
       { dx: 12, dy: -18, r: 4 },
@@ -273,7 +285,7 @@ const PATHWAYS: PathwayCluster[] = [
   {
     label: 'oxidative stress',
     cx: 60,
-    cy: -32,
+    cy: -20,
     nodes: [
       { dx: 0, dy: -16, r: 4 },
       { dx: -16, dy: 8, r: 4 },
@@ -288,7 +300,7 @@ const PATHWAYS: PathwayCluster[] = [
   {
     label: 'apoptosis',
     cx: -10,
-    cy: 38,
+    cy: 30,
     nodes: [
       { dx: -22, dy: -8, r: 4 },
       { dx: 0, dy: 4, r: 4 },
@@ -334,12 +346,16 @@ const TeirexFeatures: React.FC<SlideProps> = () => {
         Feature Selection Made the Difference
       </SlideTitle>
 
-      <div className="relative w-full max-w-[94vw] h-[72vh] flex flex-col items-stretch">
+      <div className="relative w-full max-w-[94vw] h-[72vh] flex flex-col items-stretch min-h-0">
         {/* --- TEI-REX header chip — IDENTICAL styling to slides 16/17/18 ---
             Subtitle changes to "the team's secret" to mark this as the Part 3
-            callback. Border, wash, glow, tracking, font weight all match. */}
+            callback. Border, wash, glow, tracking, font weight all match.
+            Lives in its own flex row (not absolute-positioned) so the diagram
+            below can claim the full remaining vertical space — eliminates
+            the dead zone between the chip and Path A row, and guarantees
+            Path B's accuracy band cannot be clipped at the slide bottom. */}
         <motion.div
-          className="absolute top-0 right-0 flex flex-col items-end gap-2 z-10"
+          className="w-full flex flex-col items-end gap-1 flex-shrink-0"
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
@@ -364,7 +380,7 @@ const TeirexFeatures: React.FC<SlideProps> = () => {
         </motion.div>
 
         {/* --- Main diagram --- */}
-        <div className="relative w-full flex-1 flex items-center justify-center mt-10 md:mt-12">
+        <div className="relative w-full flex-1 min-h-0 flex items-center justify-center mt-2">
           <svg
             viewBox={`0 0 ${VB.w} ${VB.h}`}
             className="w-full h-full"
@@ -411,32 +427,54 @@ const TeirexFeatures: React.FC<SlideProps> = () => {
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
+              {/* Danger glow — used to lift the Path A "MEDIOCRE" caption
+                  off the dark background so the danger-tinted text reads
+                  legibly (the deck's danger color is otherwise low
+                  contrast against the dark slide bg). */}
+              <filter
+                id="tx-danger-glow"
+                x="-50%"
+                y="-50%"
+                width="200%"
+                height="200%"
+              >
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
 
-              {/* Path B "win" gradient — magenta to success-green wash */}
+              {/* Path B "win" gradient — magenta to success-green wash.
+                  Stops bumped (0.04/0.18 -> 0.14/0.40) so the success-tinted
+                  band is unambiguously rendered — the visual punchline
+                  cannot land if the Path B band reads as empty space. */}
               <linearGradient id="tx-band-b" x1="0" y1="0" x2="1" y2="0">
                 <stop
                   offset="0%"
                   stopColor="var(--color-secondary)"
-                  stopOpacity="0.04"
+                  stopOpacity="0.14"
                 />
                 <stop
                   offset="100%"
                   stopColor="var(--color-success)"
-                  stopOpacity="0.18"
+                  stopOpacity="0.40"
                 />
               </linearGradient>
 
-              {/* Path A "mediocre" gradient — danger wash */}
+              {/* Path A "mediocre" gradient — danger wash. Stops bumped
+                  again (0.10/0.20 -> 0.20/0.35) so the "MEDIOCRE" band is
+                  unambiguously visible against the dark slide bg. */}
               <linearGradient id="tx-band-a" x1="0" y1="0" x2="1" y2="0">
                 <stop
                   offset="0%"
                   stopColor="var(--color-danger)"
-                  stopOpacity="0.05"
+                  stopOpacity="0.20"
                 />
                 <stop
                   offset="100%"
                   stopColor="var(--color-danger)"
-                  stopOpacity="0.10"
+                  stopOpacity="0.35"
                 />
               </linearGradient>
 
@@ -648,15 +686,18 @@ const TeirexFeatures: React.FC<SlideProps> = () => {
                 />
               ))}
 
-              {/* Tiny mono tag inside top-left */}
+              {/* PATH A header label — positioned ABOVE the classifier box
+                  (not inside) so it cannot collide with interior content.
+                  Mirror of Path B's treatment for symmetry. */}
               <text
-                x={clfLeft + 12}
-                y={clfTopA + 18}
-                fontSize={10}
+                x={clfLeft}
+                y={clfTopA - 10}
+                fontSize={11}
+                fontWeight={700}
                 fill="var(--color-danger)"
-                fillOpacity={0.85}
+                fillOpacity={1}
                 fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-                letterSpacing={1.5}
+                letterSpacing={1.8}
               >
                 PATH A
               </text>
@@ -664,7 +705,7 @@ const TeirexFeatures: React.FC<SlideProps> = () => {
               {/* Path label below the box */}
               <text
                 x={CLASSIFIER.cx}
-                y={clfTopA + CLASSIFIER.h + 22}
+                y={clfTopA + CLASSIFIER.h + 20}
                 textAnchor="middle"
                 fontSize={13}
                 fontWeight={700}
@@ -720,10 +761,23 @@ const TeirexFeatures: React.FC<SlideProps> = () => {
                 strokeOpacity={0.22}
               />
 
-              {/* Pathway clusters — each is a small connected graph */}
+              {/* Pathway clusters — each is a small connected graph.
+                  Cluster labels are pinned to the cluster's TOP NODE rather
+                  than the cluster center — keeps each label snug against
+                  its own cluster regardless of which side it sits on, and
+                  keeps the top-row labels (DNA REPAIR / OXIDATIVE STRESS)
+                  from clipping the Path B box top edge. */}
               {PATHWAYS.map((cluster, ci) => {
                 const baseX = CLASSIFIER.cx + cluster.cx;
                 const baseY = CLASSIFIER.cyB + cluster.cy;
+                // Find topmost node in the cluster — the label hugs it
+                // from above with a small gap, so the label position
+                // adapts per-cluster instead of using a fixed offset.
+                const topNodeDy = cluster.nodes.reduce(
+                  (min, n) => Math.min(min, n.dy - n.r),
+                  Infinity,
+                );
+                const labelY = baseY + topNodeDy - 6;
                 return (
                   <g key={`cluster-${ci}`}>
                     {/* Edges first (under nodes) */}
@@ -757,10 +811,12 @@ const TeirexFeatures: React.FC<SlideProps> = () => {
                         strokeWidth={1}
                       />
                     ))}
-                    {/* Cluster label */}
+                    {/* Cluster label — sits just above the cluster's top
+                        node so it stays inside the Path B classifier box
+                        and never clips the box's top edge. */}
                     <text
                       x={baseX}
-                      y={baseY - 30}
+                      y={labelY}
                       textAnchor="middle"
                       fontSize={9}
                       fill="var(--color-secondary)"
@@ -775,15 +831,19 @@ const TeirexFeatures: React.FC<SlideProps> = () => {
                 );
               })}
 
-              {/* Tiny mono tag inside top-left */}
+              {/* PATH B header label — positioned ABOVE the classifier box
+                  (not inside) so it cannot collide with the DNA REPAIR
+                  / OXIDATIVE STRESS / APOPTOSIS cluster labels that sit
+                  near the top of the box interior. */}
               <text
-                x={clfLeft + 12}
-                y={clfTopB + 18}
-                fontSize={10}
+                x={clfLeft}
+                y={clfTopB - 10}
+                fontSize={11}
+                fontWeight={700}
                 fill="var(--color-secondary)"
-                fillOpacity={0.95}
+                fillOpacity={1}
                 fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-                letterSpacing={1.5}
+                letterSpacing={1.8}
               >
                 PATH B
               </text>
@@ -791,7 +851,7 @@ const TeirexFeatures: React.FC<SlideProps> = () => {
               {/* Path label below the box */}
               <text
                 x={CLASSIFIER.cx}
-                y={clfTopB + CLASSIFIER.h + 22}
+                y={clfTopB + CLASSIFIER.h + 20}
                 textAnchor="middle"
                 fontSize={13}
                 fontWeight={700}
@@ -903,9 +963,11 @@ const TeirexFeatures: React.FC<SlideProps> = () => {
           </svg>
         </div>
 
-        {/* --- Bottom takeaway: the generalizable lesson --- */}
+        {/* --- Bottom takeaway: the generalizable lesson ---
+            Flex row (not absolute) so it cannot overlap or clip Path B's
+            accuracy band above it. */}
         <motion.div
-          className="absolute bottom-0 left-0 right-0 flex justify-center"
+          className="w-full flex justify-center flex-shrink-0 mt-2"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 3.45, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
@@ -969,6 +1031,11 @@ const AccuracyBand: React.FC<AccuracyBandProps> = ({
   const fillId = tone === 'great' ? 'url(#tx-band-b)' : 'url(#tx-band-a)';
   const glowFilter =
     tone === 'great' ? 'url(#tx-success-glow)' : undefined;
+  // Each tone gets its own caption glow so the "MEDIOCRE" badge reads
+  // as clearly as the "GREAT" badge — Path A's danger-red would otherwise
+  // disappear into the dark slide background without a halo.
+  const captionGlow =
+    tone === 'great' ? 'url(#tx-success-glow)' : 'url(#tx-danger-glow)';
 
   const randomY = py(0.5);
 
@@ -1028,44 +1095,51 @@ const AccuracyBand: React.FC<AccuracyBandProps> = ({
         </g>
       ))}
 
-      {/* Random chance line at 50% */}
+      {/* Random chance line at 50% — thicker stroke and brighter opacity
+          so it reads clearly against the dark band background (was a
+          1.75px / 0.85 dash that still disappeared into the Path A
+          danger wash for some viewers). */}
       <line
         x1={left}
         y1={randomY}
         x2={right}
         y2={randomY}
         stroke="var(--color-text-muted)"
-        strokeWidth={1}
-        strokeOpacity={0.5}
-        strokeDasharray="5 5"
+        strokeWidth={2.25}
+        strokeOpacity={1}
+        strokeDasharray="7 5"
       />
       <text
         x={left + 8}
-        y={randomY - 4}
-        fontSize={9}
+        y={randomY - 6}
+        fontSize={11}
+        fontWeight={700}
         fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-        letterSpacing={1.4}
-        fill="var(--color-text-muted)"
-        fillOpacity={0.7}
+        letterSpacing={1.6}
+        fill="var(--color-text)"
+        fillOpacity={1}
       >
         random · 50%
       </text>
 
-      {/* Uncertainty band */}
+      {/* Uncertainty band — fillOpacity bumped on both tones so the
+          curve area reads as a clearly tinted shape, not a faint smear. */}
       <path
         d={buildUncertaintyBand(curve, uncertainty, px, py)}
         fill={curveColor}
-        fillOpacity={tone === 'great' ? 0.18 : 0.14}
+        fillOpacity={tone === 'great' ? 0.30 : 0.25}
         stroke="none"
       />
 
-      {/* Curve */}
+      {/* Curve — Path A stroke bumped (2.5/0.85 -> 3/1.0) so the
+          mediocre curve still reads clearly even though it's dashed
+          and danger-tinted. */}
       <motion.path
         d={buildSmoothPath(curve, px, py)}
         fill="none"
         stroke={curveColor}
-        strokeWidth={tone === 'great' ? 3.25 : 2.5}
-        strokeOpacity={tone === 'great' ? 0.98 : 0.85}
+        strokeWidth={tone === 'great' ? 3.25 : 3}
+        strokeOpacity={1}
         strokeDasharray={tone === 'great' ? undefined : '7 5'}
         strokeLinecap="round"
         filter={glowFilter}
@@ -1103,16 +1177,18 @@ const AccuracyBand: React.FC<AccuracyBandProps> = ({
         high dose &rarr;
       </text>
 
-      {/* Verdict caption — pinned to the band */}
+      {/* Verdict caption — pinned to the band. Both tones get a glow
+          filter so the danger-red "MEDIOCRE" reads as clearly as the
+          success-green "GREAT". Size and weight bumped for legibility. */}
       <text
         x={right - 10}
         y={top + 18}
         textAnchor="end"
-        fontSize={12}
-        fontWeight={800}
+        fontSize={13}
+        fontWeight={900}
         fill={captionColor}
         fillOpacity={1}
-        filter={tone === 'great' ? glowFilter : undefined}
+        filter={captionGlow}
         style={{
           fontFamily: 'Inter, system-ui, sans-serif',
           letterSpacing: '0.32em',
@@ -1123,11 +1199,12 @@ const AccuracyBand: React.FC<AccuracyBandProps> = ({
       </text>
       <text
         x={right - 10}
-        y={top + 34}
+        y={top + 36}
         textAnchor="end"
-        fontSize={10}
-        fill="var(--color-text-muted)"
-        fillOpacity={0.85}
+        fontSize={12}
+        fontWeight={600}
+        fill="var(--color-text)"
+        fillOpacity={1}
         fontStyle="italic"
         style={{
           fontFamily: 'Inter, system-ui, sans-serif',

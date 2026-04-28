@@ -162,7 +162,18 @@ const TechniquesByQuestion: React.FC<SlideProps> = () => {
       </SlideTitle>
 
       <div className="w-full max-w-[92vw] flex flex-col items-center gap-3 mt-1">
-        <div className="w-full grid grid-cols-2 grid-rows-2 gap-4 md:gap-5">
+        <div
+          className="w-full grid grid-cols-2 grid-rows-2"
+          style={{
+            gap: 'clamp(0.9rem, 1.6vw, 1.4rem)',
+            // Each row claims a healthy slice of the viewport so the grid
+            // fills the body region instead of hugging its content. Tuned to
+            // sit beneath the title and breathe at the bottom edge without
+            // overflowing.
+            gridAutoRows: 'minmax(0, 1fr)',
+            height: 'clamp(30rem, 64vh, 44rem)',
+          }}
+        >
           {QUADRANTS.map((q, i) => (
             <QuadrantCard key={q.key} quadrant={q} delay={0.4 + i * 0.15} />
           ))}
@@ -184,12 +195,12 @@ const QuadrantCard: React.FC<{ quadrant: Quadrant; delay: number }> = ({
 
   return (
     <motion.div
-      className="relative rounded-lg flex flex-col gap-2 overflow-hidden"
+      className="relative rounded-lg flex flex-col gap-3 overflow-hidden h-full"
       style={{
         background: 'var(--color-bg-card)',
         border: `1.5px solid color-mix(in srgb, ${accent} 38%, transparent)`,
         boxShadow: `0 0 0 1px color-mix(in srgb, ${accent} 10%, transparent), 0 0 36px -18px color-mix(in srgb, ${accent} 35%, transparent)`,
-        padding: 'clamp(0.85rem, 1.5vw, 1.2rem) clamp(1rem, 1.7vw, 1.35rem)',
+        padding: 'clamp(1.1rem, 2vw, 1.6rem) clamp(1.25rem, 2.2vw, 1.8rem)',
       }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -211,7 +222,7 @@ const QuadrantCard: React.FC<{ quadrant: Quadrant; delay: number }> = ({
         className="font-mono"
         style={{
           color: accent,
-          fontSize: 'clamp(0.62rem, 0.8vw, 0.78rem)',
+          fontSize: 'clamp(0.7rem, 0.92vw, 0.9rem)',
           letterSpacing: '0.22em',
           textTransform: 'uppercase',
           opacity: 0.85,
@@ -225,14 +236,14 @@ const QuadrantCard: React.FC<{ quadrant: Quadrant; delay: number }> = ({
         className="font-semibold leading-tight"
         style={{
           color: accent,
-          fontSize: 'clamp(1.05rem, 1.55vw, 1.5rem)',
+          fontSize: 'clamp(1.25rem, 1.95vw, 1.85rem)',
         }}
       >
         &ldquo;{question}&rdquo;
       </h3>
 
       {/* Technique chips — small, monospaced, demoted */}
-      <div className="flex flex-wrap gap-1.5 mt-1">
+      <div className="flex flex-wrap gap-2 mt-1">
         {techniques.map((t) => (
           <TechniqueChip key={t} label={t} accent={accent} />
         ))}
@@ -240,7 +251,7 @@ const QuadrantCard: React.FC<{ quadrant: Quadrant; delay: number }> = ({
 
       {/* Callouts — italic muted text inside the quadrant */}
       {callout && callout.length > 0 && (
-        <div className="flex flex-col gap-1 mt-auto pt-2">
+        <div className="flex flex-col gap-1.5 mt-auto pt-2">
           {callout.map((c, i) => (
             <Callout key={i} label={c.label} text={c.text} accent={accent} />
           ))}
@@ -265,8 +276,8 @@ const TechniqueChip: React.FC<{ label: string; accent: string }> = ({
         color: 'var(--color-text)',
         background: `color-mix(in srgb, ${accent} 6%, transparent)`,
         border: `1px solid color-mix(in srgb, ${accent} 22%, transparent)`,
-        padding: 'clamp(0.18rem, 0.3vw, 0.28rem) clamp(0.5rem, 0.75vw, 0.7rem)',
-        fontSize: 'clamp(0.7rem, 0.88vw, 0.84rem)',
+        padding: 'clamp(0.28rem, 0.45vw, 0.4rem) clamp(0.65rem, 0.95vw, 0.9rem)',
+        fontSize: 'clamp(0.82rem, 1.05vw, 1rem)',
         opacity: 0.92,
       }}
     >
@@ -289,7 +300,7 @@ const Callout: React.FC<{
       className="leading-snug italic flex items-baseline gap-2"
       style={{
         color: 'var(--color-text-muted)',
-        fontSize: 'clamp(0.72rem, 0.9vw, 0.88rem)',
+        fontSize: 'clamp(0.85rem, 1.05vw, 1.02rem)',
         opacity: 0.92,
       }}
     >
@@ -297,7 +308,7 @@ const Callout: React.FC<{
         className="font-mono not-italic flex-shrink-0"
         style={{
           color: accent,
-          fontSize: 'clamp(0.6rem, 0.75vw, 0.72rem)',
+          fontSize: 'clamp(0.7rem, 0.88vw, 0.85rem)',
           letterSpacing: '0.16em',
           textTransform: 'uppercase',
           opacity: 0.85,

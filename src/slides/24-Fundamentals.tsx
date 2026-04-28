@@ -58,7 +58,10 @@ const PLATFORM = {
 const PILLAR_TOP_Y = PLATFORM.y + PLATFORM.h + 6; // sits flush under platform
 const PILLAR_BOTTOM_Y = FLOOR_Y - 4; // sits flush on floor
 const PILLAR_HEIGHT = PILLAR_BOTTOM_Y - PILLAR_TOP_Y;
-const PILLAR_W = 200;
+// Pillars widened from 200 -> 240 so that chip text (e.g. "evaluating CV,
+// normalization, metrics" and the "Knowing Your Data" chips) has horizontal
+// room and no longer overflows the chip rounded-rectangle frames.
+const PILLAR_W = 240;
 // Center x for each pillar — evenly distributed inside the platform span.
 const PILLAR_CXS = [
   PLATFORM.x + PLATFORM.w * 0.16, // ~234
@@ -253,8 +256,10 @@ const Fundamentals: React.FC<SlideProps> = () => {
             const cx = PILLAR_CXS[i];
             const left = cx - PILLAR_W / 2;
             // Pillar capital (top trim) and base (bottom trim) — slightly
-            // wider than the shaft, in classical column proportion.
-            const capW = PILLAR_W + 24;
+            // wider than the shaft, in classical column proportion. Trim
+            // factor reduced from 24 -> 8 so the wider pillars (240) keep
+            // the capital flush within the platform's horizontal span.
+            const capW = PILLAR_W + 8;
             const capH = 14;
             const capLeft = cx - capW / 2;
 
@@ -352,11 +357,15 @@ const Fundamentals: React.FC<SlideProps> = () => {
                   {p.caption}
                 </text>
 
-                {/* Sub-bullet chips inside the pillar */}
+                {/* Sub-bullet chips inside the pillar.
+                    Chip backgrounds use the full pillar inner width and host
+                    their label via <foreignObject> so long phrases (e.g.
+                    "evaluating CV, normalization, metrics") wrap inside the
+                    chip frame instead of overflowing the rounded rectangle. */}
                 {p.bullets.map((b, bi) => {
                   const chipY = PILLAR_TOP_Y + 80 + bi * 56;
                   const chipW = PILLAR_W - 24;
-                  const chipH = 44;
+                  const chipH = 46;
                   const chipX = cx - chipW / 2;
                   return (
                     <motion.g
@@ -381,20 +390,34 @@ const Fundamentals: React.FC<SlideProps> = () => {
                         strokeOpacity={0.55}
                         strokeWidth={1.25}
                       />
-                      <text
-                        x={cx}
-                        y={chipY + chipH / 2 + 1}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        fontSize={12}
-                        fill="var(--color-text)"
-                        fillOpacity={0.95}
-                        style={{
-                          fontFamily: 'Inter, system-ui, sans-serif',
-                        }}
+                      <foreignObject
+                        x={chipX}
+                        y={chipY}
+                        width={chipW}
+                        height={chipH}
                       >
-                        {b}
-                      </text>
+                        <div
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            textAlign: 'center',
+                            padding: '0 8px',
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            fontSize: 11.5,
+                            lineHeight: 1.18,
+                            color: 'var(--color-text)',
+                            opacity: 0.95,
+                            boxSizing: 'border-box',
+                            overflow: 'hidden',
+                            wordBreak: 'break-word',
+                          }}
+                        >
+                          {b}
+                        </div>
+                      </foreignObject>
                     </motion.g>
                   );
                 })}

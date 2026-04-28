@@ -99,7 +99,7 @@ const Closing: React.FC<SlideProps> = () => {
         {/* --- Left: the compass (brighter) + the path trail --- */}
         <div className="relative flex-shrink-0 w-[44vw] aspect-square">
           <svg
-            viewBox="0 0 600 600"
+            viewBox="-150 -150 900 900"
             className="w-full h-full"
             aria-label="The compass from slide 2, brighter, with the speaker's path traced around it"
           >

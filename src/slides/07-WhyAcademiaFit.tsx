@@ -51,13 +51,13 @@ import type { SlideProps } from '../types';
 const WhyAcademiaFit: React.FC<SlideProps> = () => {
   return (
     <SlideContainer>
-      <div className="w-full max-w-[92vw] h-full flex flex-col items-center justify-start gap-3">
+      <div className="w-full max-w-[92vw] h-full flex flex-col items-center justify-center gap-[2vh]">
         <SlideTitle subtitle="Frontier of multiple fields. No known way to do things.">
           Why Academia Fit
         </SlideTitle>
 
         {/* Card grid: lead card on top (dominant), three secondaries beneath. */}
-        <div className="w-full max-w-[88vw] flex flex-col gap-4 mt-1">
+        <div className="w-full max-w-[88vw] flex-1 flex flex-col justify-center gap-[2.2vh]">
           <LeadCard />
           <SecondaryRow />
           <HonestNote />
@@ -84,8 +84,7 @@ const LeadCard: React.FC = () => {
         border: '1.5px solid color-mix(in srgb, var(--color-primary) 38%, transparent)',
         boxShadow:
           '0 0 0 1px color-mix(in srgb, var(--color-primary) 14%, transparent), 0 0 48px -12px color-mix(in srgb, var(--color-primary) 32%, transparent)',
-        padding: 'clamp(1.25rem, 2.4vw, 2.1rem) clamp(1.5rem, 3vw, 2.6rem)',
-        minHeight: '30vh',
+        padding: 'clamp(1.4rem, 2.6vw, 2.3rem) clamp(1.6rem, 3vw, 2.6rem)',
       }}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
@@ -104,52 +103,131 @@ const LeadCard: React.FC = () => {
         }}
       />
 
-      <div className="flex flex-col gap-3">
-        {/* Tiny eyebrow tag -- "the real answer" */}
+      <div className="flex flex-row items-center gap-[2.4vw]">
+        {/* Left: text column */}
+        <div className="flex-1 flex flex-col gap-[1.2vh]">
+          {/* Tiny eyebrow tag -- "the real answer" */}
+          <motion.div
+            className="inline-flex items-center self-start uppercase font-mono"
+            style={{
+              color: 'var(--color-primary)',
+              fontSize: 'clamp(0.72rem, 0.9vw, 0.9rem)',
+              letterSpacing: '0.22em',
+              opacity: 0.95,
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.95 }}
+            transition={{ delay: 0.55, duration: 0.4 }}
+          >
+            the real answer
+          </motion.div>
+
+          {/* Headline -- wordmark-scale, in primary. */}
+          <motion.h2
+            className="font-bold leading-[1.1] tracking-tight"
+            style={{
+              color: 'var(--color-primary)',
+              fontSize: 'clamp(1.7rem, 3.1vw, 2.7rem)',
+            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.55 }}
+          >
+            Frontier projects. No known way to do things.
+          </motion.h2>
+
+          {/* One-line description in muted text. Single sentence, no bullets. */}
+          <motion.p
+            className="leading-snug max-w-[60ch]"
+            style={{
+              color: 'var(--color-text)',
+              fontSize: 'clamp(1.05rem, 1.5vw, 1.4rem)',
+              opacity: 0.92,
+            }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 0.92, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.55 }}
+          >
+            Constantly changing projects on the frontier of multiple fields &mdash; often no known way
+            to do things, even from a data science perspective. The forefront of knowledge, applied to
+            new fields.
+          </motion.p>
+        </div>
+
+        {/* Right: branching-paths frontier glyph */}
         <motion.div
-          className="inline-flex items-center self-start uppercase font-mono"
+          aria-hidden
+          className="hidden md:flex shrink-0 items-center justify-center"
           style={{
-            color: 'var(--color-primary)',
-            fontSize: 'clamp(0.62rem, 0.78vw, 0.78rem)',
-            letterSpacing: '0.22em',
-            opacity: 0.85,
+            width: 'clamp(10rem, 18vw, 18rem)',
+            height: 'clamp(10rem, 18vw, 18rem)',
           }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.85 }}
-          transition={{ delay: 0.55, duration: 0.4 }}
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.85, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         >
-          the real answer
+          <svg
+            viewBox="0 0 120 120"
+            fill="none"
+            stroke="currentColor"
+            style={{ color: 'var(--color-primary)', width: '100%', height: '100%' }}
+          >
+            <defs>
+              <radialGradient id="lead-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="currentColor" stopOpacity="0.35" />
+                <stop offset="70%" stopColor="currentColor" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+            {/* soft glow disc */}
+            <circle cx="28" cy="86" r="48" fill="url(#lead-glow)" />
+            {/* origin node */}
+            <circle cx="28" cy="86" r="5" fill="currentColor" opacity="0.95" />
+            {/* branching paths -- three forking trajectories outward */}
+            <path
+              d="M28 86 Q 50 70 72 56"
+              strokeWidth="2"
+              strokeLinecap="round"
+              opacity="0.85"
+            />
+            <path
+              d="M28 86 Q 56 86 90 78"
+              strokeWidth="2"
+              strokeLinecap="round"
+              opacity="0.7"
+              strokeDasharray="4 4"
+            />
+            <path
+              d="M28 86 Q 48 96 78 100"
+              strokeWidth="2"
+              strokeLinecap="round"
+              opacity="0.55"
+              strokeDasharray="2 5"
+            />
+            {/* sub-branch off the top path */}
+            <path
+              d="M58 64 Q 78 50 100 42"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              opacity="0.55"
+              strokeDasharray="3 4"
+            />
+            {/* frontier nodes */}
+            <circle cx="72" cy="56" r="3" fill="currentColor" opacity="0.85" />
+            <circle cx="100" cy="42" r="2.5" fill="currentColor" opacity="0.55" />
+            <circle cx="90" cy="78" r="2.5" fill="currentColor" opacity="0.65" />
+            <circle cx="78" cy="100" r="2.5" fill="currentColor" opacity="0.5" />
+            {/* horizon line suggesting "frontier" */}
+            <line
+              x1="6"
+              y1="22"
+              x2="114"
+              y2="22"
+              strokeWidth="1"
+              opacity="0.25"
+              strokeDasharray="2 4"
+            />
+          </svg>
         </motion.div>
-
-        {/* Headline -- wordmark-scale, in primary. */}
-        <motion.h2
-          className="font-bold leading-[1.1] tracking-tight"
-          style={{
-            color: 'var(--color-primary)',
-            fontSize: 'clamp(1.6rem, 3vw, 2.6rem)',
-          }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.55 }}
-        >
-          Frontier projects. No known way to do things.
-        </motion.h2>
-
-        {/* One-line description in muted text. Single sentence, no bullets. */}
-        <motion.p
-          className="leading-snug max-w-[88ch]"
-          style={{
-            color: 'var(--color-text-muted)',
-            fontSize: 'clamp(0.95rem, 1.25vw, 1.15rem)',
-          }}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.55 }}
-        >
-          Constantly changing projects on the frontier of multiple fields &mdash; often no known way
-          to do things, even from a data science perspective. The forefront of knowledge, applied to
-          new fields.
-        </motion.p>
       </div>
     </motion.div>
   );
@@ -190,18 +268,18 @@ const SecondaryRow: React.FC = () => {
           muted -- this is the editorial frame the speaker explicitly asked
           for. Set as a header so it isn't repeated three times. */}
       <div
-        className="font-mono italic uppercase self-start"
+        className="font-mono italic uppercase self-start font-semibold"
         style={{
-          color: 'var(--color-text-muted)',
-          fontSize: 'clamp(0.62rem, 0.78vw, 0.76rem)',
-          letterSpacing: '0.18em',
-          opacity: 0.75,
+          color: 'var(--color-text-secondary, var(--color-text))',
+          fontSize: 'clamp(1rem, 1.4vw, 1.35rem)',
+          letterSpacing: '0.22em',
+          opacity: 1,
         }}
       >
         things I didn&rsquo;t know to value at your age
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-[1.2vw]">
         {items.map((item, i) => (
           <SecondaryCard
             key={item.headline}
@@ -222,11 +300,12 @@ const SecondaryCard: React.FC<{
 }> = ({ headline, description, delay }) => {
   return (
     <motion.div
-      className="rounded-lg flex flex-col gap-1.5"
+      className="rounded-lg flex flex-col justify-center gap-[0.8vh]"
       style={{
         background: 'var(--color-bg-card)',
-        border: '1px solid color-mix(in srgb, var(--color-text-muted) 22%, transparent)',
-        padding: 'clamp(0.85rem, 1.5vw, 1.15rem) clamp(1rem, 1.7vw, 1.35rem)',
+        border: '1px solid color-mix(in srgb, var(--color-text-muted) 28%, transparent)',
+        padding: 'clamp(1rem, 1.8vw, 1.5rem) clamp(1.1rem, 2vw, 1.6rem)',
+        minHeight: '14vh',
       }}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -236,8 +315,8 @@ const SecondaryCard: React.FC<{
         className="font-semibold leading-snug"
         style={{
           color: 'var(--color-text)',
-          fontSize: 'clamp(0.95rem, 1.2vw, 1.15rem)',
-          opacity: 0.9,
+          fontSize: 'clamp(1rem, 1.35vw, 1.3rem)',
+          opacity: 0.95,
         }}
       >
         {headline}
@@ -245,9 +324,9 @@ const SecondaryCard: React.FC<{
       <p
         className="leading-snug"
         style={{
-          color: 'var(--color-text-muted)',
-          fontSize: 'clamp(0.78rem, 0.95vw, 0.92rem)',
-          opacity: 0.85,
+          color: 'var(--color-text-secondary, var(--color-text-muted))',
+          fontSize: 'clamp(0.85rem, 1.05vw, 1.05rem)',
+          opacity: 0.9,
         }}
       >
         {description}
@@ -265,14 +344,14 @@ const SecondaryCard: React.FC<{
 const HonestNote: React.FC = () => {
   return (
     <motion.p
-      className="text-center italic leading-snug self-center mt-1"
+      className="text-center italic leading-snug self-center mt-[0.5vh]"
       style={{
-        color: 'var(--color-text-muted)',
-        fontSize: 'clamp(0.72rem, 0.9vw, 0.88rem)',
-        opacity: 0.7,
+        color: 'var(--color-text-secondary, var(--color-text))',
+        fontSize: 'clamp(0.9rem, 1.15vw, 1.1rem)',
+        opacity: 0.9,
       }}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 0.7 }}
+      animate={{ opacity: 0.9 }}
       transition={{ delay: 1.7, duration: 0.55 }}
     >
       Not every academic position delivers all four. The combination is rare &mdash; and partly luck.

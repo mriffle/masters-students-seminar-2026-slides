@@ -35,9 +35,15 @@ import type { SlideProps } from '../types';
  * unambiguously the center of gravity.
  */
 
-const VB = { w: 1000, h: 560 };
-const CENTER = { x: VB.w / 2, y: VB.h / 2 + 10 };
-const PERIPH_R = 215;
+// viewBox aspect (~2.5) is tuned to roughly match the 90vw / 64vh container
+// on a 16:9 viewport, so `xMidYMid meet` doesn't leave a wide empty margin
+// on either side.
+const VB = { w: 1600, h: 640 };
+const CENTER = { x: VB.w / 2, y: VB.h / 2 + 18 };
+const PERIPH_R = 250;
+// Push the bottom corners outward horizontally so their description blocks
+// don't collide in the middle. Top corner stays on the vertical axis.
+const BOTTOM_X_SPREAD = 180;
 
 // 0 / 120 / 240 — same triangular topology as slide 09. One node at the top,
 // two at the bottom. Order chosen so bench biologists sit at the apex (the
@@ -76,7 +82,17 @@ const LINE_END_TRIM = NODE_R + 6;
 
 const ThreeWayTranslation: React.FC<SlideProps> = () => {
   const corners = AUDIENCES.map((a) => {
-    const [x, y] = polar(CENTER.x, CENTER.y, PERIPH_R, a.angle);
+    const [px, py] = polar(CENTER.x, CENTER.y, PERIPH_R, a.angle);
+    // Widen the triangle base: shift bottom-left further left and bottom-right
+    // further right so their description text has room without colliding.
+    const isBottomRight = a.angle === 120;
+    const isBottomLeft = a.angle === 240;
+    const x = isBottomLeft
+      ? px - BOTTOM_X_SPREAD
+      : isBottomRight
+        ? px + BOTTOM_X_SPREAD
+        : px;
+    const y = py;
     // Trim line endpoint back from the node center along the radial direction.
     const dx = x - CENTER.x;
     const dy = y - CENTER.y;
@@ -104,10 +120,10 @@ const ThreeWayTranslation: React.FC<SlideProps> = () => {
         The Three-Way Translation
       </SlideTitle>
 
-      <div className="relative w-full max-w-[92vw] h-[68vh] flex flex-col items-center">
+      <div className="relative w-[92vw] max-w-[92vw] h-[64vh] flex flex-col items-center justify-start">
         <svg
           viewBox={`0 0 ${VB.w} ${VB.h}`}
-          className="w-full h-full"
+          className="w-full flex-1 min-h-0"
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
@@ -192,11 +208,28 @@ const ThreeWayTranslation: React.FC<SlideProps> = () => {
 
           {/* --- Corner audience nodes --- */}
           {corners.map((c, i) => {
-            // Decide label placement: top corner gets label above; bottom
-            // corners get labels below their node.
+            // Label placement:
+            //   - Top corner    : centered above its node
+            //   - Bottom-left   : flush-left, anchored under the left corner node
+            //   - Bottom-right  : flush-right, anchored under the right corner node
+            // The side-anchoring keeps the two bottom blurbs from colliding mid-slide.
             const isTop = c.angle === 0;
-            const labelY = isTop ? c.y - NODE_R - 22 : c.y + NODE_R + 26;
-            const blurbY = isTop ? c.y - NODE_R - 4 : c.y + NODE_R + 48;
+            const isBottomRight = c.angle === 120;
+            const isBottomLeft = c.angle === 240;
+
+            const labelY = isTop ? c.y - NODE_R - 22 : c.y + NODE_R + 30;
+            const blurbY = isTop ? c.y - NODE_R - 4 : c.y + NODE_R + 56;
+
+            let textAnchor: 'start' | 'middle' | 'end' = 'middle';
+            let textX = c.x;
+            if (isBottomLeft) {
+              textAnchor = 'start';
+              textX = c.x - NODE_R - 4;
+            } else if (isBottomRight) {
+              textAnchor = 'end';
+              textX = c.x + NODE_R + 4;
+            }
+
             return (
               <motion.g
                 key={`node-${c.key}`}
@@ -230,9 +263,9 @@ const ThreeWayTranslation: React.FC<SlideProps> = () => {
 
                 {/* Label */}
                 <text
-                  x={c.x}
+                  x={textX}
                   y={labelY}
-                  textAnchor="middle"
+                  textAnchor={textAnchor}
                   fontSize={20}
                   fontWeight={700}
                   fill="var(--color-text)"
@@ -242,9 +275,9 @@ const ThreeWayTranslation: React.FC<SlideProps> = () => {
                 </text>
                 {/* Characterization — italic, muted */}
                 <text
-                  x={c.x}
+                  x={textX}
                   y={blurbY}
-                  textAnchor="middle"
+                  textAnchor={textAnchor}
                   fontSize={13}
                   fontStyle="italic"
                   fill="var(--color-text-muted)"
@@ -308,7 +341,7 @@ const ThreeWayTranslation: React.FC<SlideProps> = () => {
             as a subordinate caption — load-bearing editorial line, but
             visually subordinate to the diagram. */}
         <motion.div
-          className="absolute bottom-0 left-0 right-0 flex justify-center px-4"
+          className="mt-1 flex w-full justify-center px-4"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.4, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}

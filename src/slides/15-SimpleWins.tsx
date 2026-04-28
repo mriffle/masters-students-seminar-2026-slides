@@ -68,26 +68,29 @@ import type { SlideProps } from '../types';
 // isn't enough do you branch upward". The visual weight is dominated by the
 // trunk; the branch is small, narrower, set in tertiary so it visibly recedes.
 
-const VB = { w: 1000, h: 280 };
+// viewBox is sized so the trunk (left ~70%) + escalation chip cluster on the
+// right both fit comfortably with margin. Widened from 1000 -> 1200 to give
+// the wide "occasional deep learning" chip room without clipping.
+const VB = { w: 1200, h: 360 };
 
 // Trunk: a fat horizontal slab carrying ~80% of the slide's visual weight.
 const TRUNK = {
   x1: 60,
-  x2: 720,        // trunk extends to ~72% width before the branch peels off
-  yTop: 198,
-  yBottom: 248,   // 50px tall — heavy
+  x2: 800,        // trunk extends to ~67% of the new wider viewBox
+  yTop: 240,
+  yBottom: 300,   // 60px tall — heavy
 };
 
 // Branch: peels UP-and-to-the-right off the trunk's upper edge near its end.
-// Narrower (~14px tall), lifts to a higher band where the chips sit.
+// Narrower (~16px tall), lifts to a higher band where the chips sit.
 const BRANCH = {
-  startX: 600,    // where the branch leaves the trunk
-  startY: 198,
-  midX: 720,      // bend point
-  midY: 130,
-  endX: 940,      // chip cluster anchor
-  endY: 110,
-  width: 14,      // visibly narrower than the trunk
+  startX: 680,    // where the branch leaves the trunk
+  startY: 240,
+  midX: 820,      // bend point
+  midY: 150,
+  endX: 980,      // chip cluster anchor (leaves >200px of right margin for chip widths)
+  endY: 120,
+  width: 16,      // visibly narrower than the trunk
 };
 
 // Escalation chips — three tools, in tertiary.
@@ -104,7 +107,7 @@ const CHIPS: { label: string }[] = [
 const SimpleWins: React.FC<SlideProps> = () => {
   return (
     <SlideContainer>
-      <div className="relative w-full max-w-[92vw] h-[80vh] flex flex-col items-stretch justify-between">
+      <div className="relative w-full max-w-[92vw] h-[80vh] flex flex-col items-stretch justify-start">
         {/* --- Section marker (top-left) --- */}
         <motion.div
           className="absolute top-0 left-0 flex items-center gap-3"
@@ -179,11 +182,18 @@ const SimpleWins: React.FC<SlideProps> = () => {
         </motion.div>
 
         {/* --- Tool-selection tree --- */}
-        <div className="relative w-full mt-2 md:mt-4">
+        {/* The tree fills the lower band of the slide. Constrained max-width
+            so the SVG never grows so wide that the right-side chips push out
+            of the visible slide area, and enough vertical room (h-[34vh]) so
+            the tree visibly fills the space between the follow-on line and
+            the cultural footer caption (eliminating the prior mid-slide
+            void). */}
+        <div className="relative w-full max-w-[78vw] mx-auto mt-4 md:mt-6 h-[34vh]">
           <svg
             viewBox={`0 0 ${VB.w} ${VB.h}`}
-            className="w-full h-auto"
+            className="w-full h-full"
             preserveAspectRatio="xMidYMid meet"
+            style={{ overflow: 'visible' }}
             aria-label="Tool selection tree: a wide trunk of simple canonical methods, with a smaller escalation branch leading to GAM, SVM, and occasional deep learning"
           >
             <defs>
@@ -251,9 +261,9 @@ const SimpleWins: React.FC<SlideProps> = () => {
               x={(TRUNK.x1 + TRUNK.x2) / 2 - 60}
               y={(TRUNK.yTop + TRUNK.yBottom) / 2}
               fill="var(--color-primary)"
-              fontSize={26}
+              fontSize={32}
               fontWeight={700}
-              letterSpacing={1.2}
+              letterSpacing={1.4}
               textAnchor="middle"
               dominantBaseline="middle"
               filter="url(#simple-wins-trunk-glow)"
@@ -264,16 +274,18 @@ const SimpleWins: React.FC<SlideProps> = () => {
               Simple, canonical methods
             </motion.text>
 
-            {/* "~80% of the work" hint — small mono caption beneath the trunk. */}
+            {/* "~80% of the work" hint — small mono caption beneath the trunk.
+                Bumped opacity 0.6 -> 0.95 and font size 13 -> 17 so the chip
+                list reads cleanly at presentation distance. */}
             <motion.text
               x={(TRUNK.x1 + TRUNK.x2) / 2 - 60}
-              y={TRUNK.yBottom + 22}
+              y={TRUNK.yBottom + 30}
               fill="var(--color-primary)"
-              fontSize={13}
+              fontSize={17}
               fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
               letterSpacing={2}
               textAnchor="middle"
-              fillOpacity={0.6}
+              fillOpacity={0.95}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2.0, duration: 0.5 }}
@@ -320,12 +332,12 @@ const SimpleWins: React.FC<SlideProps> = () => {
                 set near the bend. */}
             <motion.text
               x={BRANCH.midX - 6}
-              y={BRANCH.midY - 16}
+              y={BRANCH.midY - 22}
               fill="var(--color-text-muted)"
-              fontSize={14}
+              fontSize={17}
               fontStyle="italic"
               textAnchor="middle"
-              fillOpacity={0.85}
+              fillOpacity={0.95}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2.55, duration: 0.5 }}
@@ -335,11 +347,14 @@ const SimpleWins: React.FC<SlideProps> = () => {
 
             {/* --- Escalation chips (tertiary) --- */}
             {CHIPS.map((chip, i) => {
-              // Stack chips vertically near the branch endpoint.
-              const chipX = BRANCH.endX - 8;
-              const chipY = BRANCH.endY - 32 + i * 32;
-              const chipWidth = chip.label.length * 8.5 + 28;
-              const chipHeight = 26;
+              // Stack chips vertically near the branch endpoint. Spread is
+              // 40px between chips so the cluster reads clearly without
+              // overlap; chipX is the chip cluster anchor with a small inset
+              // from the branch endpoint.
+              const chipX = BRANCH.endX + 8;
+              const chipY = BRANCH.endY - 36 + i * 44;
+              const chipWidth = chip.label.length * 9.5 + 32;
+              const chipHeight = 32;
               return (
                 <motion.g
                   key={chip.label}
@@ -354,16 +369,16 @@ const SimpleWins: React.FC<SlideProps> = () => {
                     height={chipHeight}
                     rx={chipHeight / 2}
                     fill="var(--color-tertiary)"
-                    fillOpacity={0.1}
+                    fillOpacity={0.14}
                     stroke="var(--color-tertiary)"
-                    strokeWidth={1.25}
-                    strokeOpacity={0.55}
+                    strokeWidth={1.4}
+                    strokeOpacity={0.7}
                   />
                   <text
                     x={chipX}
                     y={chipY + 1}
                     fill="var(--color-tertiary)"
-                    fontSize={13}
+                    fontSize={16}
                     fontWeight={600}
                     fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
                     letterSpacing={0.8}
@@ -377,16 +392,16 @@ const SimpleWins: React.FC<SlideProps> = () => {
             })}
 
             {/* "made easy with scikit-learn" — tiny aside under the deep
-                learning chip, the speaker's own framing. Mono, very small,
+                learning chip, the speaker's own framing. Mono, small,
                 muted. */}
             <motion.text
-              x={BRANCH.endX - 8}
-              y={BRANCH.endY - 32 + (CHIPS.length - 1) * 32 + 28}
+              x={BRANCH.endX + 8}
+              y={BRANCH.endY - 36 + (CHIPS.length - 1) * 44 + 36}
               fill="var(--color-text-muted)"
-              fontSize={10}
+              fontSize={13}
               fontStyle="italic"
               textAnchor="middle"
-              fillOpacity={0.7}
+              fillOpacity={0.9}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 3.1, duration: 0.5 }}
@@ -399,10 +414,12 @@ const SimpleWins: React.FC<SlideProps> = () => {
         {/* --- Cultural-conventions footer caption --- */}
         {/* The visualization-conventions point per the brief: volcano plots,
             PCA, normalizations are CULTURAL — knowing your audience's
-            conventions is part of the skill. Tucked in the bottom-right as a
-            quiet mono aside so it lands without competing with the hero quote. */}
+            conventions is part of the skill. Anchored in the bottom-right as
+            a quiet aside so it lands without competing with the hero quote.
+            Sizes bumped (and z-index raised) so it isn't visually clipped or
+            overlapped by the tree SVG above. */}
         <motion.div
-          className="absolute bottom-0 right-0 flex items-center gap-2 max-w-[44vw] text-right"
+          className="absolute bottom-0 right-0 flex items-baseline gap-3 max-w-[52vw] text-right z-20"
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 3.25, duration: 0.55 }}
@@ -411,8 +428,8 @@ const SimpleWins: React.FC<SlideProps> = () => {
             className="font-mono uppercase tracking-[0.22em] flex-shrink-0"
             style={{
               color: 'var(--color-tertiary)',
-              fontSize: 'clamp(0.6rem, 0.7vw, 0.7rem)',
-              opacity: 0.8,
+              fontSize: 'clamp(0.75rem, 0.95vw, 0.95rem)',
+              opacity: 0.95,
             }}
           >
             Also cultural
@@ -421,8 +438,8 @@ const SimpleWins: React.FC<SlideProps> = () => {
             className="italic leading-snug"
             style={{
               color: 'var(--color-text-muted)',
-              fontSize: 'clamp(0.7rem, 0.82vw, 0.82rem)',
-              opacity: 0.85,
+              fontSize: 'clamp(0.85rem, 1.05vw, 1.05rem)',
+              opacity: 0.95,
             }}
           >
             volcano plots, PCA, normalizations &mdash; knowing your audience&rsquo;s

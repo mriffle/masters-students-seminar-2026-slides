@@ -49,13 +49,23 @@ import type { SlideProps } from '../types';
 // ---------------------------------------------------------------------------
 // Geometry
 // ---------------------------------------------------------------------------
+//
+// The viewBox is intentionally wider than the donut's bounding circle so
+// that external segment labels (with leader lines) sit comfortably inside
+// the SVG with no clipping. CENTER stays at the geometric middle of the
+// viewBox so the donut renders centered.
 
-const VB = { w: 560, h: 560 };
+const VB = { w: 900, h: 620 };
 const CENTER = { x: VB.w / 2, y: VB.h / 2 };
-const R_OUTER = 220;
-const R_INNER = 130;
-const LABEL_R = 250; // where percentage labels sit (just outside the ring)
-const ACTIVITY_LABEL_R = 290; // activity name sits a bit further out
+const R_OUTER = 200;
+const R_INNER = 120;
+
+// Leader-line geometry: a short radial elbow just outside the ring, then a
+// horizontal run out to the label. Labels live well outside the ring so
+// they never overlap the donut.
+const LEADER_R1 = R_OUTER + 12; // start of leader (just outside the ring)
+const LEADER_R2 = R_OUTER + 38; // elbow point
+const LABEL_X_OFFSET = 18; // horizontal gap between elbow and label text
 
 interface Segment {
   key: string;
@@ -69,7 +79,7 @@ interface Segment {
 // rotate clockwise. The "personal projects" wedge sits between reading
 // and coding, where the glow reads cleanly without overlapping a label.
 //
-// Total: 50 + 20 + 10 + 8 + 12 = 100
+// Total: 50 + 20 + 8 + 10 + 12 = 100
 const SEGMENTS: Segment[] = [
   { key: 'coding', label: 'Coding', pct: 50, color: 'var(--color-primary)' },
   { key: 'writing', label: 'Writing & figures', pct: 20, color: 'var(--color-tertiary)' },
@@ -113,19 +123,25 @@ const wedgePath = (startFrac: number, endFrac: number): string => {
   ].join(' ');
 };
 
-// Precompute segment placements: cumulative fractional offsets and midpoints.
+// Precompute segment placements: cumulative fractional offsets, midpoints,
+// leader-line geometry and a horizontal label anchor.
 interface PlacedSegment extends Segment {
   startFrac: number;
   endFrac: number;
   midFrac: number;
-  midX: number;
-  midY: number;
-  pctX: number;
-  pctY: number;
-  labelX: number;
-  labelY: number;
   pushX: number; // outward push direction (unit vector)
   pushY: number;
+  // Leader line (start at ring edge, elbow just outside, horizontal run)
+  leaderStartX: number;
+  leaderStartY: number;
+  leaderElbowX: number;
+  leaderElbowY: number;
+  leaderEndX: number;
+  leaderEndY: number;
+  // Label anchor + side
+  labelX: number;
+  labelY: number;
+  labelSide: 'left' | 'right';
 }
 
 const placeSegments = (): PlacedSegment[] => {
@@ -137,29 +153,38 @@ const placeSegments = (): PlacedSegment[] => {
     cum += s.pct;
 
     const midTheta = midFrac * TAU - Math.PI / 2;
-    const midRingR = (R_OUTER + R_INNER) / 2;
-    const midX = CENTER.x + midRingR * Math.cos(midTheta);
-    const midY = CENTER.y + midRingR * Math.sin(midTheta);
-
-    const [pctX, pctY] = polar(midFrac, LABEL_R);
-    const [labelX, labelY] = polar(midFrac, ACTIVITY_LABEL_R);
-
     const pushX = Math.cos(midTheta);
     const pushY = Math.sin(midTheta);
+
+    // Leader: start at outer ring along the wedge midline, elbow a bit
+    // further out, then a short horizontal run to the label.
+    const [leaderStartX, leaderStartY] = polar(midFrac, LEADER_R1);
+    const [leaderElbowX, leaderElbowY] = polar(midFrac, LEADER_R2);
+
+    const labelSide: 'left' | 'right' = pushX < 0 ? 'left' : 'right';
+    const horizDir = labelSide === 'right' ? 1 : -1;
+    const leaderEndX = leaderElbowX + horizDir * LABEL_X_OFFSET;
+    const leaderEndY = leaderElbowY;
+
+    const labelX = leaderEndX + horizDir * 6;
+    const labelY = leaderEndY;
 
     return {
       ...s,
       startFrac,
       endFrac,
       midFrac,
-      midX,
-      midY,
-      pctX,
-      pctY,
-      labelX,
-      labelY,
       pushX,
       pushY,
+      leaderStartX,
+      leaderStartY,
+      leaderElbowX,
+      leaderElbowY,
+      leaderEndX,
+      leaderEndY,
+      labelX,
+      labelY,
+      labelSide,
     };
   });
 };
@@ -177,7 +202,7 @@ const TypicalWeek: React.FC<SlideProps> = () => {
         A Typical Week
       </SlideTitle>
 
-      <div className="w-full max-w-[92vw] h-[72vh] flex flex-row items-center justify-between gap-4 mt-1">
+      <div className="w-full max-w-[96vw] h-[72vh] flex flex-row items-center justify-between gap-4 mt-1">
         <Callout
           side="left"
           delay={1.4}
@@ -186,7 +211,7 @@ const TypicalWeek: React.FC<SlideProps> = () => {
           accent="var(--color-tertiary)"
         />
 
-        <div className="flex-1 flex items-center justify-center h-full">
+        <div className="flex-1 flex items-center justify-center h-full min-w-0">
           <Donut placed={placed} />
         </div>
 
@@ -289,63 +314,92 @@ const Donut: React.FC<{ placed: PlacedSegment[] }> = ({ placed }) => {
       >
         <text
           x={CENTER.x}
-          y={CENTER.y + 22}
+          y={CENTER.y + 6}
           textAnchor="middle"
-          fontSize={13}
+          fontSize={15}
           fontStyle="italic"
           fill="var(--color-text-muted)"
           style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
         >
-          approximate hours allocation
+          approximate
+        </text>
+        <text
+          x={CENTER.x}
+          y={CENTER.y + 26}
+          textAnchor="middle"
+          fontSize={15}
+          fontStyle="italic"
+          fill="var(--color-text-muted)"
+          style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+        >
+          hours allocation
         </text>
       </motion.g>
 
-      {/* Percentage labels — sit just outside the ring, in the segment color */}
-      {placed.map((seg, i) => (
-        <motion.g
-          key={`pct-${seg.key}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.85 + i * 0.08, duration: 0.5 }}
-        >
-          <text
-            x={seg.pctX + seg.pushX * (seg.emphasized ? 6 : 0)}
-            y={seg.pctY + seg.pushY * (seg.emphasized ? 6 : 0) + 5}
-            textAnchor="middle"
-            fontSize={22}
-            fontWeight={700}
-            fill={seg.color}
-            filter={seg.emphasized ? 'url(#tw-soft-glow)' : undefined}
-            style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-          >
-            {seg.pct}%
-          </text>
-        </motion.g>
-      ))}
-
-      {/* Activity name labels — further out, smaller, muted text */}
+      {/* Labels: leader line + category name + percentage, all OUTSIDE the
+          ring. The leader line uses the segment color; the category name is
+          set in the foreground text color and the percentage is set in the
+          segment color, bold, sitting on a second line. This guarantees no
+          label overlaps the donut and every segment shows both a name and
+          a percentage. */}
       {placed.map((seg, i) => {
-        // For the activity-name layer, anchor depends on which side the
-        // label sits to avoid clipping at the SVG edges.
-        const anchor: 'start' | 'middle' | 'end' =
-          seg.pushX < -0.3 ? 'end' : seg.pushX > 0.3 ? 'start' : 'middle';
+        const anchor: 'start' | 'end' = seg.labelSide === 'right' ? 'start' : 'end';
+        const pushOffsetX = seg.emphasized ? seg.pushX * 6 : 0;
+        const pushOffsetY = seg.emphasized ? seg.pushY * 6 : 0;
         return (
-          <motion.text
+          <motion.g
             key={`label-${seg.key}`}
-            x={seg.labelX + seg.pushX * (seg.emphasized ? 6 : 0)}
-            y={seg.labelY + seg.pushY * (seg.emphasized ? 6 : 0) + 22}
-            textAnchor={anchor}
-            fontSize={13}
-            fontWeight={500}
-            fill="var(--color-text)"
-            opacity={0.92}
-            style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.92 }}
-            transition={{ delay: 0.95 + i * 0.08, duration: 0.5 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.85 + i * 0.08, duration: 0.5 }}
           >
-            {seg.label}
-          </motion.text>
+            {/* Leader line: ring edge -> elbow -> horizontal end */}
+            <polyline
+              points={`${seg.leaderStartX + pushOffsetX},${seg.leaderStartY + pushOffsetY} ${
+                seg.leaderElbowX + pushOffsetX
+              },${seg.leaderElbowY + pushOffsetY} ${seg.leaderEndX + pushOffsetX},${
+                seg.leaderEndY + pushOffsetY
+              }`}
+              fill="none"
+              stroke={seg.color}
+              strokeWidth={1.5}
+              strokeOpacity={0.85}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {/* Tiny dot at the ring end of the leader, in the segment color */}
+            <circle
+              cx={seg.leaderStartX + pushOffsetX}
+              cy={seg.leaderStartY + pushOffsetY}
+              r={2.5}
+              fill={seg.color}
+            />
+            {/* Category name — slightly above the leader's horizontal end */}
+            <text
+              x={seg.labelX + pushOffsetX}
+              y={seg.labelY + pushOffsetY - 6}
+              textAnchor={anchor}
+              fontSize={20}
+              fontWeight={600}
+              fill="var(--color-text)"
+              style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+            >
+              {seg.label}
+            </text>
+            {/* Percentage — sits below the category name, in segment color */}
+            <text
+              x={seg.labelX + pushOffsetX}
+              y={seg.labelY + pushOffsetY + 18}
+              textAnchor={anchor}
+              fontSize={22}
+              fontWeight={700}
+              fill={seg.color}
+              filter={seg.emphasized ? 'url(#tw-soft-glow)' : undefined}
+              style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+            >
+              {seg.pct}%
+            </text>
+          </motion.g>
         );
       })}
     </svg>
@@ -368,7 +422,7 @@ const Callout: React.FC<{
   const initialX = side === 'left' ? -16 : 16;
   return (
     <motion.div
-      className="flex flex-col gap-3 max-w-[22vw]"
+      className="flex flex-col gap-3 max-w-[20vw] shrink-0"
       style={{ textAlign: side === 'left' ? 'right' : 'left' }}
       initial={{ opacity: 0, x: initialX }}
       animate={{ opacity: 1, x: 0 }}

@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import SlideContainer from '../components/SlideContainer';
-import SlideTitle from '../components/SlideTitle';
 import type { SlideProps } from '../types';
 
 /**
@@ -142,9 +141,20 @@ const DEAD_ENDS: DeadEnd[] = [
   },
 ];
 
-// Pursued path: lands at a node mid-right then continues off-screen.
+// Pursued path: a CONNECTED, CONTINUOUS curve that starts at the origin,
+// threads through a mid fork-point, lands at a primary node mid-right, and
+// then continues straight off-screen to the right. Keeping this as a single
+// SVG <path> (rather than two disconnected <line>s) is what makes the onward
+// branch read as one glowing primary trajectory instead of a stranded dot.
+const PURSUED_FORK = { x: 360, y: ORIGIN.y - 6 }; // mid threading point
 const PURSUED_NODE = { x: 720, y: ORIGIN.y };
 const PURSUED_TAIL = { x: VIEW_W, y: ORIGIN.y };
+// Cubic Bezier from origin -> PURSUED_NODE that visibly threads between the
+// upper and lower dead-end fans without ever overlapping a dead-end node.
+const PURSUED_PATH_D = `M ${ORIGIN.x} ${ORIGIN.y} C ${ORIGIN.x + 90} ${ORIGIN.y - 18}, ${PURSUED_FORK.x + 40} ${PURSUED_FORK.y - 4}, ${PURSUED_NODE.x} ${PURSUED_NODE.y}`;
+// Continuation off-screen right -- one more <path> so the whole onward
+// trajectory reads as connected (origin -> node -> right edge).
+const PURSUED_TAIL_D = `M ${PURSUED_NODE.x} ${PURSUED_NODE.y} L ${PURSUED_TAIL.x} ${PURSUED_TAIL.y}`;
 
 // ---------------------------------------------------------------------------
 // Slide
@@ -153,15 +163,44 @@ const PURSUED_TAIL = { x: VIEW_W, y: ORIGIN.y };
 const DeadEndsBridge: React.FC<SlideProps> = () => {
   return (
     <SlideContainer>
-      <div className="w-full max-w-[92vw] h-full flex flex-col items-center justify-start gap-2">
-        <SlideTitle subtitle="The senior skill nobody teaches">
-          Dead Ends
-        </SlideTitle>
+      <div className="w-full max-w-[92vw] h-full flex flex-col items-center justify-between py-[2vh]">
+        {/* Title + bumped-contrast subtitle. The subtitle in the shared
+            SlideTitle component is small and dim by default; we render an
+            inline replacement here at a larger size and stronger contrast
+            so it doesn't get drowned by the title and pull-quote. */}
+        <div className="text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="font-bold tracking-tight"
+            style={{
+              color: 'var(--color-text)',
+              fontSize: 'clamp(2.2rem, 4.4vw, 3.6rem)',
+            }}
+          >
+            Dead Ends
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="mt-2 font-normal"
+            style={{
+              color: 'var(--color-text)',
+              opacity: 0.82,
+              fontSize: 'clamp(1.05rem, 1.7vw, 1.45rem)',
+              letterSpacing: '0.02em',
+            }}
+          >
+            The senior skill nobody teaches
+          </motion.p>
+        </div>
 
         {/* Centerpiece pull-quote -- verbatim per part doc 2.13.
             Wordmark-ish scale; this is the moment that lands. */}
         <motion.div
-          className="w-full max-w-[86vw] mt-1"
+          className="w-full max-w-[86vw]"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
@@ -205,9 +244,11 @@ const DeadEndsBridge: React.FC<SlideProps> = () => {
           </blockquote>
         </motion.div>
 
-        {/* Diagram: branching path with dead ends + the pursued path. */}
+        {/* Diagram: branching path with dead ends + the pursued path.
+            Bumped to ~52vh so the diagram fills the lower half of the
+            slide instead of leaving a dark band below it. */}
         <motion.div
-          className="w-full max-w-[90vw] h-[44vh]"
+          className="w-full max-w-[92vw] h-[52vh]"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.85, duration: 0.65 }}
@@ -220,7 +261,7 @@ const DeadEndsBridge: React.FC<SlideProps> = () => {
           className="text-center font-light italic leading-snug max-w-[80vw]"
           style={{
             color: 'var(--color-text-muted)',
-            fontSize: 'clamp(0.85rem, 1.05vw, 1.05rem)',
+            fontSize: 'clamp(0.95rem, 1.2vw, 1.2rem)',
             letterSpacing: 0.3,
           }}
           initial={{ opacity: 0, y: 8 }}
@@ -229,7 +270,7 @@ const DeadEndsBridge: React.FC<SlideProps> = () => {
         >
           The same pattern recognition that lets you recognize dead ends in
           your own work is what lets you recognize when{' '}
-          <span style={{ color: 'var(--color-text)', opacity: 0.92 }}>
+          <span style={{ color: 'var(--color-text)', opacity: 0.95 }}>
             AI is wrong.
           </span>
         </motion.p>
@@ -240,12 +281,12 @@ const DeadEndsBridge: React.FC<SlideProps> = () => {
           className="text-center font-light tracking-wide"
           style={{
             color: 'var(--color-text-muted)',
-            opacity: 0.6,
-            fontSize: 'clamp(0.75rem, 0.9vw, 0.9rem)',
+            opacity: 0.7,
+            fontSize: 'clamp(0.8rem, 1vw, 1rem)',
             letterSpacing: 1.4,
           }}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
+          animate={{ opacity: 0.7 }}
           transition={{ delay: 3.1, duration: 0.7 }}
         >
           Which brings us to where things are going.
@@ -282,9 +323,11 @@ const ForkingPath: React.FC = () => {
     >
       <defs>
         {/* Glow filter for the pursued path -- matches the grammar from
-            slides 03 / 04 / 05. */}
+            slides 03 / 04 / 05. Bumped stdDeviation for stronger bloom so
+            the cyan onward branch reads as primary against the dim danger
+            dead-ends. */}
         <filter id="bridge-primary-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feGaussianBlur stdDeviation="4.5" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -292,7 +335,7 @@ const ForkingPath: React.FC = () => {
         </filter>
         {/* Softer glow for the magnifying lens -- present but not dominant. */}
         <filter id="bridge-lens-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="1.6" result="blur" />
+          <feGaussianBlur stdDeviation="2.4" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -304,7 +347,10 @@ const ForkingPath: React.FC = () => {
             slide 05's "detour-fade-corp" / "detour-fade-ent" defs. Each
             branch needs its own gradient because gradientUnits="userSpaceOnUse"
             with branch-specific endpoints keeps the fade aligned with the
-            branch direction. Slide 29 should reproduce this pattern. */}
+            branch direction. Slide 29 should reproduce this pattern.
+            Opacities bumped slightly so the dashed dead-ends read against
+            the near-black background while still staying clearly secondary
+            to the primary onward branch. */}
         {DEAD_ENDS.map((b) => (
           <linearGradient
             key={b.id}
@@ -315,14 +361,15 @@ const ForkingPath: React.FC = () => {
             x2={b.end.x}
             y2={b.end.y}
           >
-            <stop offset="0%" stopColor="var(--color-danger)" stopOpacity="0.55" />
-            <stop offset="55%" stopColor="var(--color-danger)" stopOpacity="0.42" />
-            <stop offset="100%" stopColor="var(--color-text-muted)" stopOpacity="0.32" />
+            <stop offset="0%" stopColor="var(--color-danger)" stopOpacity="0.78" />
+            <stop offset="55%" stopColor="var(--color-danger)" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="var(--color-text-muted)" stopOpacity="0.5" />
           </linearGradient>
         ))}
       </defs>
 
-      {/* Origin marker -- small muted node where all branches diverge. */}
+      {/* Origin marker -- muted node where all branches diverge. Bumped
+          radius and stroke so it reads clearly against the dark background. */}
       <motion.g
         initial={{ opacity: 0, scale: 0.7 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -332,18 +379,18 @@ const ForkingPath: React.FC = () => {
         <circle
           cx={ORIGIN.x}
           cy={ORIGIN.y}
-          r={7}
+          r={11}
           fill="var(--color-bg-card)"
           stroke="var(--color-text-muted)"
-          strokeOpacity={0.6}
-          strokeWidth={1.5}
+          strokeOpacity={0.85}
+          strokeWidth={2.4}
         />
         <circle
           cx={ORIGIN.x}
           cy={ORIGIN.y}
-          r={2.5}
+          r={4}
           fill="var(--color-text-muted)"
-          fillOpacity={0.85}
+          fillOpacity={0.95}
         />
       </motion.g>
 
@@ -357,13 +404,15 @@ const ForkingPath: React.FC = () => {
         const nodeDelay = branchDelay + 0.45;
         return (
           <g key={b.id}>
-            {/* Curved branch from origin to node */}
+            {/* Curved branch from origin to node -- thicker stroke so the
+                dashed dead-ends read against near-black, while staying
+                clearly secondary to the solid primary branch. */}
             <motion.path
               d={`M ${ORIGIN.x} ${ORIGIN.y} C ${b.control1.x} ${b.control1.y}, ${b.control2.x} ${b.control2.y}, ${b.node.x} ${b.node.y}`}
               fill="none"
               stroke={`url(#bridge-fade-${b.id})`}
-              strokeWidth={2}
-              strokeDasharray="8 8"
+              strokeWidth={3.4}
+              strokeDasharray="9 8"
               strokeLinecap="round"
               initial={{ pathLength: 0, opacity: 0 }}
               animate={{ pathLength: 1, opacity: 1 }}
@@ -380,8 +429,8 @@ const ForkingPath: React.FC = () => {
               x2={b.terminator === 'x' ? b.end.x - 10 : b.end.x}
               y2={b.terminator === 'x' ? b.end.y : b.end.y}
               stroke={`url(#bridge-fade-${b.id})`}
-              strokeWidth={1.8}
-              strokeDasharray="6 8"
+              strokeWidth={3}
+              strokeDasharray="7 8"
               strokeLinecap="round"
               initial={{ pathLength: 0, opacity: 0 }}
               animate={{ pathLength: 1, opacity: 1 }}
@@ -400,44 +449,74 @@ const ForkingPath: React.FC = () => {
       })}
 
       {/* --- Pursued path (solid, glowing primary, exits right edge) ---
-          Animated last, after the dead ends have populated. */}
-      <motion.line
-        x1={ORIGIN.x}
-        y1={ORIGIN.y}
-        x2={PURSUED_NODE.x}
-        y2={PURSUED_NODE.y}
+          A SINGLE connected cubic Bezier from origin -> PURSUED_NODE plus
+          a continuation segment to the right edge. Drawn LAST so it sits
+          on top of every dashed dead-end. Two stacked strokes per segment:
+          a wide low-opacity HALO backing (so the line reads against the
+          dashed danger gradient even where it crosses) plus the bright
+          primary stroke on top. Without the halo, a thin cyan line gets
+          visually lost in the field of dashed branches. */}
+      {/* Halo: wide soft backing stroke under the main pursued curve. */}
+      <motion.path
+        d={PURSUED_PATH_D}
+        fill="none"
         stroke="var(--color-primary)"
-        strokeOpacity={0.75}
-        strokeWidth={2.4}
+        strokeOpacity={0.35}
+        strokeWidth={11}
         strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.75 }}
+        animate={{ pathLength: 1, opacity: 0.35 }}
         transition={{ delay: 1.85, duration: 0.75, ease: [0.4, 0, 0.2, 1] }}
         filter="url(#bridge-primary-glow)"
       />
-      {/* Continuation off-screen right */}
-      <motion.line
-        x1={PURSUED_NODE.x}
-        y1={PURSUED_NODE.y}
-        x2={PURSUED_TAIL.x}
-        y2={PURSUED_TAIL.y}
+      {/* Bright primary stroke for the main pursued curve. */}
+      <motion.path
+        d={PURSUED_PATH_D}
+        fill="none"
         stroke="var(--color-primary)"
-        strokeOpacity={0.55}
-        strokeWidth={2}
-        strokeDasharray="2 6"
+        strokeOpacity={1}
+        strokeWidth={5}
         strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.55 }}
-        transition={{ delay: 2.45, duration: 0.55 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ delay: 1.85, duration: 0.75, ease: [0.4, 0, 0.2, 1] }}
+        filter="url(#bridge-primary-glow)"
       />
-      {/* Arrowhead pointing off-screen right */}
+      {/* Continuation off-screen right -- same halo + bright stroke so the
+          onward arc keeps glowing all the way past the right edge. */}
+      <motion.path
+        d={PURSUED_TAIL_D}
+        fill="none"
+        stroke="var(--color-primary)"
+        strokeOpacity={0.32}
+        strokeWidth={10}
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 0.32 }}
+        transition={{ delay: 2.45, duration: 0.55 }}
+        filter="url(#bridge-primary-glow)"
+      />
+      <motion.path
+        d={PURSUED_TAIL_D}
+        fill="none"
+        stroke="var(--color-primary)"
+        strokeOpacity={0.95}
+        strokeWidth={4.4}
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 0.95 }}
+        transition={{ delay: 2.45, duration: 0.55 }}
+        filter="url(#bridge-primary-glow)"
+      />
+      {/* Arrowhead pointing off-screen right -- larger and more saturated. */}
       <motion.polygon
-        points={`${PURSUED_TAIL.x - 13},${PURSUED_TAIL.y - 6} ${PURSUED_TAIL.x},${PURSUED_TAIL.y} ${PURSUED_TAIL.x - 13},${PURSUED_TAIL.y + 6}`}
+        points={`${PURSUED_TAIL.x - 18},${PURSUED_TAIL.y - 9} ${PURSUED_TAIL.x},${PURSUED_TAIL.y} ${PURSUED_TAIL.x - 18},${PURSUED_TAIL.y + 9}`}
         fill="var(--color-primary)"
-        fillOpacity={0.65}
+        fillOpacity={0.9}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.65 }}
+        animate={{ opacity: 0.9 }}
         transition={{ delay: 2.85, duration: 0.4 }}
+        filter="url(#bridge-primary-glow)"
       />
       {/* Pursued-path node -- glowing primary ring. The moment the speaker's
           experience routes them past the dead ends. */}
@@ -450,19 +529,19 @@ const ForkingPath: React.FC = () => {
         <circle
           cx={PURSUED_NODE.x}
           cy={PURSUED_NODE.y}
-          r={14}
+          r={18}
           fill="var(--color-primary)"
-          fillOpacity={0.18}
+          fillOpacity={0.22}
           stroke="var(--color-primary)"
-          strokeWidth={2.2}
+          strokeWidth={3}
           filter="url(#bridge-primary-glow)"
         />
         <circle
           cx={PURSUED_NODE.x}
           cy={PURSUED_NODE.y}
-          r={3.5}
+          r={5}
           fill="var(--color-primary)"
-          fillOpacity={0.95}
+          fillOpacity={1}
         />
       </motion.g>
 
@@ -470,25 +549,27 @@ const ForkingPath: React.FC = () => {
           Hovers above the lens-flagged fork, marking the moment of
           recognition: "this branch is a dead end -- don't go there."
           A short dashed connector links the lens to the fork point on
-          the dead-end branch it's diagnosing. */}
+          the dead-end branch it's diagnosing. Lens position bumped left
+          and down a touch and size bumped so it's clearly a discoverable
+          element rather than an easily-missed accent. */}
       <MagnifyingLens
-        cx={290}
-        cy={150}
+        cx={300}
+        cy={155}
         // The fork it's marking -- mid-curve point of the lens-flagged dead end.
-        marksX={350}
-        marksY={205}
+        marksX={355}
+        marksY={208}
       />
       <motion.text
-        x={290}
-        y={113}
+        x={300}
+        y={104}
         textAnchor="middle"
         fill="var(--color-text-muted)"
-        fillOpacity={0.85}
-        fontSize={11}
+        fillOpacity={0.95}
+        fontSize={15}
         fontStyle="italic"
-        letterSpacing={1.2}
+        letterSpacing={1.4}
         initial={{ opacity: 0, y: -4 }}
-        animate={{ opacity: 0.85, y: 0 }}
+        animate={{ opacity: 0.95, y: 0 }}
         transition={{ delay: 3.4, duration: 0.55 }}
       >
         recognize it early
@@ -516,19 +597,19 @@ const DeadEndNode: React.FC<{ cx: number; cy: number; delay: number }> = ({
     <circle
       cx={cx}
       cy={cy}
-      r={9}
+      r={13}
       fill="var(--color-bg-card)"
       stroke="var(--color-danger)"
-      strokeOpacity={0.55}
-      strokeWidth={1.6}
-      strokeDasharray="3 3"
+      strokeOpacity={0.85}
+      strokeWidth={2.4}
+      strokeDasharray="4 3"
     />
     <circle
       cx={cx}
       cy={cy}
-      r={2.4}
+      r={3.6}
       fill="var(--color-text-muted)"
-      fillOpacity={0.6}
+      fillOpacity={0.85}
     />
   </motion.g>
 );
@@ -543,7 +624,7 @@ const DeadEndX: React.FC<{ cx: number; cy: number; delay: number }> = ({
   cy,
   delay,
 }) => {
-  const r = 7;
+  const r = 9;
   return (
     <motion.g
       initial={{ opacity: 0, scale: 0.6 }}
@@ -557,8 +638,8 @@ const DeadEndX: React.FC<{ cx: number; cy: number; delay: number }> = ({
         x2={cx + r}
         y2={cy + r}
         stroke="var(--color-danger)"
-        strokeOpacity={0.7}
-        strokeWidth={2}
+        strokeOpacity={0.9}
+        strokeWidth={3}
         strokeLinecap="round"
       />
       <line
@@ -567,8 +648,8 @@ const DeadEndX: React.FC<{ cx: number; cy: number; delay: number }> = ({
         x2={cx + r}
         y2={cy - r}
         stroke="var(--color-danger)"
-        strokeOpacity={0.7}
-        strokeWidth={2}
+        strokeOpacity={0.9}
+        strokeWidth={3}
         strokeLinecap="round"
       />
     </motion.g>
@@ -594,19 +675,19 @@ const FadeOutTip: React.FC<{ cx: number; cy: number; delay: number }> = ({
     <circle
       cx={cx}
       cy={cy}
-      r={4}
+      r={6}
       fill="none"
       stroke="var(--color-text-muted)"
-      strokeOpacity={0.4}
-      strokeWidth={1.2}
+      strokeOpacity={0.65}
+      strokeWidth={2}
       strokeDasharray="2 3"
     />
     <circle
       cx={cx}
       cy={cy}
-      r={1.5}
+      r={2.4}
       fill="var(--color-text-muted)"
-      fillOpacity={0.45}
+      fillOpacity={0.7}
     />
   </motion.g>
 );
@@ -627,7 +708,7 @@ const MagnifyingLens: React.FC<{
   marksX: number;
   marksY: number;
 }> = ({ cx, cy, marksX, marksY }) => {
-  const r = 16;
+  const r = 22;
   // Handle goes outward toward the fork it's marking.
   const dx = marksX - cx;
   const dy = marksY - cy;
@@ -652,19 +733,19 @@ const MagnifyingLens: React.FC<{
         cy={cy}
         r={r}
         fill="var(--color-primary)"
-        fillOpacity={0.1}
+        fillOpacity={0.14}
         stroke="var(--color-primary)"
-        strokeOpacity={0.85}
-        strokeWidth={2.2}
+        strokeOpacity={1}
+        strokeWidth={3.2}
         filter="url(#bridge-lens-glow)"
       />
       {/* Inner highlight glint -- gives the lens dimensionality */}
       <circle
         cx={cx - r * 0.35}
         cy={cy - r * 0.35}
-        r={r * 0.18}
+        r={r * 0.22}
         fill="var(--color-primary)"
-        fillOpacity={0.35}
+        fillOpacity={0.5}
       />
       {/* Handle */}
       <line
@@ -673,8 +754,8 @@ const MagnifyingLens: React.FC<{
         x2={handleEnd.x}
         y2={handleEnd.y}
         stroke="var(--color-primary)"
-        strokeOpacity={0.85}
-        strokeWidth={3.2}
+        strokeOpacity={1}
+        strokeWidth={4.4}
         strokeLinecap="round"
         filter="url(#bridge-lens-glow)"
       />
@@ -686,18 +767,19 @@ const MagnifyingLens: React.FC<{
         x2={marksX}
         y2={marksY}
         stroke="var(--color-primary)"
-        strokeOpacity={0.35}
-        strokeWidth={1.2}
-        strokeDasharray="2 4"
+        strokeOpacity={0.55}
+        strokeWidth={1.8}
+        strokeDasharray="3 5"
         strokeLinecap="round"
       />
       {/* Tiny pulse dot at the fork being diagnosed */}
       <circle
         cx={marksX}
         cy={marksY}
-        r={3}
+        r={4.5}
         fill="var(--color-primary)"
-        fillOpacity={0.8}
+        fillOpacity={1}
+        filter="url(#bridge-lens-glow)"
       />
     </motion.g>
   );

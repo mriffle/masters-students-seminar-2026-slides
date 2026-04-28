@@ -391,6 +391,10 @@ const Communication: React.FC<SlideProps> = () => {
           {/* ============================================================ */}
           {/* HEADLINE PULL-QUOTE (the load-bearing question, secondary)  */}
           {/* ============================================================ */}
+          {/* Centered horizontally between the speaker (cx=175) and the  */}
+          {/* leftmost audience figure (cx=720, head extends to ~702).    */}
+          {/* Quote band is narrowed and shifted left so it never crosses */}
+          {/* into the audience cluster.                                  */}
           <motion.g
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -398,9 +402,9 @@ const Communication: React.FC<SlideProps> = () => {
           >
             {/* Open and close quote marks, slightly offset */}
             <text
-              x={150}
+              x={75}
               y={335}
-              fontSize={56}
+              fontSize={48}
               fontWeight={800}
               fill="var(--color-secondary)"
               fillOpacity={0.32}
@@ -412,10 +416,10 @@ const Communication: React.FC<SlideProps> = () => {
 
             {/* Line 1 of the question */}
             <text
-              x={500}
+              x={400}
               y={310}
               textAnchor="middle"
-              fontSize={30}
+              fontSize={26}
               fontWeight={800}
               fill="var(--color-secondary)"
               filter="url(#comm-secondary-glow)"
@@ -428,10 +432,10 @@ const Communication: React.FC<SlideProps> = () => {
             </text>
             {/* Line 2 of the question */}
             <text
-              x={500}
-              y={350}
+              x={400}
+              y={345}
               textAnchor="middle"
-              fontSize={30}
+              fontSize={26}
               fontWeight={800}
               fill="var(--color-secondary)"
               filter="url(#comm-secondary-glow)"
@@ -444,9 +448,9 @@ const Communication: React.FC<SlideProps> = () => {
             </text>
 
             <text
-              x={840}
-              y={365}
-              fontSize={56}
+              x={650}
+              y={360}
+              fontSize={48}
               fontWeight={800}
               fill="var(--color-secondary)"
               fillOpacity={0.32}
@@ -458,8 +462,8 @@ const Communication: React.FC<SlideProps> = () => {
 
             {/* Attribution / source frame — what audiences are starting to ask */}
             <text
-              x={500}
-              y={382}
+              x={400}
+              y={377}
               textAnchor="middle"
               fontSize={11}
               fontStyle="italic"

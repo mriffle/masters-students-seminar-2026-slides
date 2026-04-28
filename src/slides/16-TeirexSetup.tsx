@@ -112,14 +112,14 @@ const CLASSIFIER = {
  * and a "?" question mark.
  */
 const OUTPUTS: { key: string; label: string; cy: number }[] = [
-  { key: 'dose', label: 'dose', cy: 130 },
+  { key: 'dose', label: 'dose', cy: 150 },
   { key: 'type', label: 'type', cy: 240 },
-  { key: 'time', label: 'time', cy: 350 },
+  { key: 'time', label: 'time', cy: 330 },
 ];
 const OUTPUT_BOX = {
-  cx: 850,
-  w: 160,
-  h: 70,
+  cx: 840,
+  w: 150,
+  h: 64,
   rx: 12,
 };
 
@@ -151,13 +151,16 @@ const TeirexSetup: React.FC<SlideProps> = () => {
       </SlideTitle>
 
       <div className="relative w-full max-w-[92vw] h-[68vh] flex flex-col items-stretch">
-        {/* --- TEI-REX header chip (top-right) --- */}
+        {/* --- TEI-REX header chip (top row, right-aligned) --- */}
         {/* Pill chip in --color-secondary marking the project. The subtitle
             "IARPA — top 4 teams" sits below in muted text. This is the
             canonical TEI-REX header chip — slide 23 should reuse this exact
-            styling so the audience recognizes the project on sight. */}
+            styling so the audience recognizes the project on sight.
+            Lives in its own flex row so it does NOT overlay the SVG below
+            (previously absolute-positioned, which clipped the rightmost
+            output chips). */}
         <motion.div
-          className="absolute top-0 right-0 flex flex-col items-end gap-2"
+          className="w-full flex flex-col items-end gap-1"
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
@@ -182,11 +185,15 @@ const TeirexSetup: React.FC<SlideProps> = () => {
         </motion.div>
 
         {/* --- Problem diagram --- */}
-        <div className="relative w-full flex-1 flex items-center justify-center mt-10 md:mt-12">
+        {/* No top margin — header chip lives in its own flex row above, so the
+            diagram can expand to fill the remaining vertical space and the
+            previous large empty band in the upper-left is eliminated. */}
+        <div className="relative w-full flex-1 flex items-center justify-center mt-2">
           <svg
             viewBox={`0 0 ${VB.w} ${VB.h}`}
             className="w-full h-full"
             preserveAspectRatio="xMidYMid meet"
+            style={{ overflow: 'visible' }}
             aria-label="TEI-REX problem diagram: a non-invasive skin-swab sample feeds into a black-box classifier with a question mark; three unknown outputs emerge — dose, type, and time."
           >
             <defs>
@@ -218,7 +225,7 @@ const TeirexSetup: React.FC<SlideProps> = () => {
                 <polygon
                   points="0,0 10,5 0,10"
                   fill="var(--color-text-muted)"
-                  fillOpacity={0.65}
+                  fillOpacity={0.95}
                 />
               </marker>
             </defs>
@@ -234,8 +241,8 @@ const TeirexSetup: React.FC<SlideProps> = () => {
               x2={clfLeft - arrowGap}
               y2={CLASSIFIER.cy}
               stroke="var(--color-text-muted)"
-              strokeWidth={2}
-              strokeOpacity={0.5}
+              strokeWidth={2.5}
+              strokeOpacity={0.9}
               markerEnd="url(#teirex-arrow)"
               initial={{ pathLength: 0, opacity: 0 }}
               animate={{ pathLength: 1, opacity: 1 }}
@@ -251,8 +258,8 @@ const TeirexSetup: React.FC<SlideProps> = () => {
                 x2={outLeft - arrowGap}
                 y2={o.cy}
                 stroke="var(--color-text-muted)"
-                strokeWidth={2}
-                strokeOpacity={0.5}
+                strokeWidth={2.5}
+                strokeOpacity={0.9}
                 markerEnd="url(#teirex-arrow)"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
@@ -408,11 +415,12 @@ const TeirexSetup: React.FC<SlideProps> = () => {
               <text
                 x={clfLeft + 14}
                 y={CLASSIFIER.cy - CLASSIFIER.h / 2 + 22}
-                fontSize={11}
-                fill="var(--color-text-muted)"
+                fontSize={12}
+                fill="var(--color-text)"
                 fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
                 letterSpacing={1.5}
-                fillOpacity={0.7}
+                fillOpacity={1}
+                fontWeight={600}
               >
                 BLACK BOX
               </text>
@@ -424,28 +432,51 @@ const TeirexSetup: React.FC<SlideProps> = () => {
             {/* ============================================================ */}
             {OUTPUTS.map((o, i) => {
               const boxLeft = OUTPUT_BOX.cx - OUTPUT_BOX.w / 2;
+              // Shared chip styling — enforced identically on all three outputs
+              // so the dose / type / time chips read at exactly the same visual
+              // weight (no per-chip dimness drift).
+              const CHIP_RECT = {
+                fill: 'var(--color-bg-card)',
+                stroke: 'var(--color-secondary)',
+                strokeWidth: 2,
+                strokeOpacity: 0.95,
+                fillOpacity: 1,
+              } as const;
+              const CHIP_QMARK = {
+                fontSize: 34,
+                fontWeight: 800,
+                fill: 'var(--color-secondary)',
+                fillOpacity: 1,
+              } as const;
+              const CHIP_LABEL = {
+                fontSize: 20,
+                fontWeight: 700,
+                fill: 'var(--color-text)',
+                fillOpacity: 1,
+              } as const;
               return (
                 <motion.g
                   key={`out-${o.key}`}
-                  initial={{ opacity: 0, x: 12 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{
-                    delay: 1.85 + i * 0.13,
-                    duration: 0.55,
+                    delay: 1.85 + i * 0.1,
+                    duration: 0.5,
                     ease: [0.4, 0, 0.2, 1],
                   }}
                 >
-                  {/* Output box — thin secondary border, faint fill */}
+                  {/* Output box — secondary border, faint fill */}
                   <rect
                     x={boxLeft}
                     y={o.cy - OUTPUT_BOX.h / 2}
                     width={OUTPUT_BOX.w}
                     height={OUTPUT_BOX.h}
                     rx={OUTPUT_BOX.rx}
-                    fill="var(--color-bg-card)"
-                    stroke="var(--color-secondary)"
-                    strokeWidth={1.75}
-                    strokeOpacity={0.7}
+                    fill={CHIP_RECT.fill}
+                    fillOpacity={CHIP_RECT.fillOpacity}
+                    stroke={CHIP_RECT.stroke}
+                    strokeWidth={CHIP_RECT.strokeWidth}
+                    strokeOpacity={CHIP_RECT.strokeOpacity}
                   />
                   {/* Question mark — large, lit, emphasizes the unknown */}
                   <text
@@ -453,10 +484,10 @@ const TeirexSetup: React.FC<SlideProps> = () => {
                     y={o.cy + 2}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    fontSize={36}
-                    fontWeight={800}
-                    fill="var(--color-secondary)"
-                    fillOpacity={0.95}
+                    fontSize={CHIP_QMARK.fontSize}
+                    fontWeight={CHIP_QMARK.fontWeight}
+                    fill={CHIP_QMARK.fill}
+                    fillOpacity={CHIP_QMARK.fillOpacity}
                     filter="url(#teirex-secondary-glow)"
                     style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                   >
@@ -464,13 +495,14 @@ const TeirexSetup: React.FC<SlideProps> = () => {
                   </text>
                   {/* Label — the unknown's name */}
                   <text
-                    x={boxLeft + 60}
+                    x={boxLeft + 56}
                     y={o.cy + 2}
                     textAnchor="start"
                     dominantBaseline="middle"
-                    fontSize={20}
-                    fontWeight={700}
-                    fill="var(--color-text)"
+                    fontSize={CHIP_LABEL.fontSize}
+                    fontWeight={CHIP_LABEL.fontWeight}
+                    fill={CHIP_LABEL.fill}
+                    fillOpacity={CHIP_LABEL.fillOpacity}
                     style={{
                       fontFamily: 'Inter, system-ui, sans-serif',
                       letterSpacing: '0.04em',
@@ -520,9 +552,11 @@ const TeirexSetup: React.FC<SlideProps> = () => {
 
         {/* --- "Hard problem" footer line --- */}
         {/* The brief asks for the difficulty stated plainly. A single line in
-            slightly elevated weight under the diagram. Not a paragraph. */}
+            slightly elevated weight under the diagram. Not a paragraph.
+            Lives in its own flex row (no longer absolute-positioned) so it
+            does not overlap the bottom of the SVG diagram. */}
         <motion.div
-          className="absolute bottom-0 left-0 right-0 flex justify-center"
+          className="w-full flex justify-center mt-2"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 2.55, duration: 0.55, ease: [0.4, 0, 0.2, 1] }}

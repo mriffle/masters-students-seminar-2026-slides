@@ -60,10 +60,14 @@ import type { SlideProps } from '../types';
 // many small angle steps so we can render it as a smooth path AND drop
 // "yes, and..." chips at specific angular positions along the way.
 
-const SPIRAL_CENTER = { x: 470, y: 360 };
-const SPIRAL_TURNS = 3.2; // ~3 full turns, deep enough to feel like a hole
-const SPIRAL_START_RADIUS = 180; // outer radius
-const SPIRAL_END_RADIUS = 14; // tight near center
+// NOTE: Spiral center sits in the upper-LEFT quadrant of the viewBox so the
+// right column (dead-ends miniature) and the bottom row (stark conclusion
+// plate) have guaranteed space. Smaller outer radius keeps chips clear of
+// the right column / bottom row.
+const SPIRAL_CENTER = { x: 290, y: 230 };
+const SPIRAL_TURNS = 3.0; // ~3 full turns, deep enough to feel like a hole
+const SPIRAL_START_RADIUS = 130; // outer radius
+const SPIRAL_END_RADIUS = 12; // tight near center
 // Logarithmic spiral: r(theta) = a * exp(b * theta). We solve for a, b given
 // start/end radii at theta=0 and theta=2*pi*TURNS.
 const SPIRAL_TOTAL_THETA = SPIRAL_TURNS * 2 * Math.PI;
@@ -106,19 +110,26 @@ type YesAndChip = {
   label: string;
 };
 
+// Chips are anchored at the OUTER turns of the spiral only (theta < ~2.2π),
+// so the deepest, smallest, hardest-to-read chips never appear. Each chip's
+// width is sized to fit its label at its render scale (see chipW calc) so
+// no chip overflows its pill outline with a leading "...".
+//
+// Layout: with the spiral on the left, chips bias to the RIGHT side of the
+// spiral so they sit in the right-of-spiral horizontal band without
+// colliding with the dead-ends miniature on the far right.
 const YES_AND_CHIPS: YesAndChip[] = [
-  { theta: Math.PI * 0.55, side: 'right', label: 'yes, and try this...' },
-  { theta: Math.PI * 1.25, side: 'left', label: 'yes, and consider...' },
-  { theta: Math.PI * 1.95, side: 'right', label: 'yes, and what about...' },
-  { theta: Math.PI * 2.65, side: 'left', label: 'yes, and also...' },
-  { theta: Math.PI * 3.35, side: 'right', label: 'yes, and...' },
+  { theta: Math.PI * 0.45, side: 'right', label: 'yes, and try this...' },
+  { theta: Math.PI * 1.15, side: 'left', label: 'yes, and consider...' },
+  { theta: Math.PI * 1.75, side: 'right', label: 'yes, and what about...' },
+  { theta: Math.PI * 2.35, side: 'left', label: 'yes, and also...' },
 ];
 
 // Position the developer figure near the top of the spiral, just outside
 // its outer rim — they're about to descend.
 const FIGURE = {
   x: SPIRAL_CENTER.x,
-  y: SPIRAL_CENTER.y - SPIRAL_START_RADIUS - 26,
+  y: SPIRAL_CENTER.y - SPIRAL_START_RADIUS - 30,
 };
 
 // ---------------------------------------------------------------------------
@@ -212,9 +223,12 @@ const RabbitHoleStark: React.FC<SlideProps> = () => {
           </span>
         </motion.p>
 
-        {/* Main visual: spiral + bottom row (stark conclusion + dead-ends mini) */}
+        {/* Main visual: spiral + bottom row (stark conclusion + dead-ends
+            mini). Height bumped so the wide-aspect viewBox (1000x620) is
+            rendered larger by preserveAspectRatio meet, taking up more of
+            the previously-empty horizontal real estate. */}
         <motion.div
-          className="w-full max-w-[90vw] h-[68vh]"
+          className="w-full max-w-[92vw] h-[74vh]"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55, duration: 0.65 }}
@@ -343,19 +357,28 @@ const RabbitHoleVisual: React.FC = () => {
         transition={{ delay: 1.0, duration: 0.5 }}
       />
 
-      {/* "yes, and..." AI suggestion chips, anchored along the spiral */}
+      {/* "yes, and..." AI suggestion chips, anchored along the spiral.
+          Width is sized per-label (using a conservative monospace-ish char
+          width) so no label is clipped with a leading "...". Contrast is
+          held high (full-opacity solid bg-card with darker overlay so the
+          spiral glow does not bleed through). */}
       {YES_AND_CHIPS.map((chip, i) => {
         const p = spiralPoint(chip.theta);
         const offsetSign = chip.side === 'left' ? -1 : 1;
-        // Larger chips at the rim, smaller as we go deeper — visual
-        // perspective of "going further in."
+        // Modest scale variation: outer chips slightly larger than deeper
+        // ones, but never small enough to become illegible.
         const t = chip.theta / SPIRAL_TOTAL_THETA; // 0..1 along the spiral
-        const chipScale = 1.0 - t * 0.45; // 1.0 → ~0.55
-        const chipOpacity = 1.0 - t * 0.35; // 1.0 → ~0.65
-        const chipW = 132 * chipScale;
-        const chipH = 22 * chipScale;
-        // Anchor chip OUTSIDE the spiral path on the chosen side.
-        const ax = p.x + offsetSign * (chipW / 2 + 22);
+        const chipScale = 1.0 - t * 0.18; // 1.0 → ~0.82
+        const chipH = 26 * chipScale;
+        const fontSize = Math.max(11, chipH * 0.55);
+        // Width fits the label: ~0.62em per char + generous horizontal
+        // padding. The 36px total padding (18 each side) ensures the
+        // longest labels (e.g. "yes, and what about...") never overflow
+        // their pill outline as a leading "...".
+        const chipW = chip.label.length * fontSize * 0.62 + 36;
+        // Anchor chip OUTSIDE the spiral path on the chosen side, with a
+        // generous gap so chips never overlap the spiral glow.
+        const ax = p.x + offsetSign * (chipW / 2 + 30);
         const ay = p.y;
         return (
           <YesAndChipNode
@@ -366,9 +389,10 @@ const RabbitHoleVisual: React.FC = () => {
             cy={ay}
             w={chipW}
             h={chipH}
+            fontSize={fontSize}
             label={chip.label}
-            opacity={chipOpacity}
-            delay={1.4 + i * 0.18}
+            opacity={1}
+            delay={1.0 + i * 0.16}
           />
         );
       })}
@@ -385,18 +409,20 @@ const RabbitHoleVisual: React.FC = () => {
       <DeadEndsMiniature />
 
       {/* Tiny footer line beneath the bottom row */}
+      {/* Footer line — sits beneath the stark plate at the absolute
+          bottom of the canvas, the closing beat of the slide. */}
       <motion.text
         x={500}
-        y={606}
+        y={595}
         textAnchor="middle"
         fill="var(--color-text-muted)"
-        fillOpacity={0.55}
-        fontSize={11}
+        fillOpacity={0.7}
+        fontSize={13}
         fontStyle="italic"
         letterSpacing={1.2}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.55 }}
-        transition={{ delay: 4.2, duration: 0.6 }}
+        animate={{ opacity: 0.7 }}
+        transition={{ delay: 3.4, duration: 0.6 }}
       >
         It will give you things. You won&rsquo;t know if those things are good.
       </motion.text>
@@ -435,16 +461,17 @@ const DeveloperFigure: React.FC<{ x: number; y: number }> = ({ x, y }) => (
       strokeWidth={1.6}
       strokeOpacity={0.85}
     />
-    {/* Tiny "you" tag */}
+    {/* Tiny "you" tag — bumped contrast and size so it remains legible. */}
     <text
-      x={x - 22}
-      y={y - 12}
+      x={x - 24}
+      y={y - 4}
       textAnchor="end"
-      fill="var(--color-text-muted)"
-      fillOpacity={0.7}
-      fontSize={10}
+      fill="var(--color-text)"
+      fillOpacity={0.92}
+      fontSize={13}
       fontStyle="italic"
-      letterSpacing={1.0}
+      fontWeight={500}
+      letterSpacing={1.4}
     >
       you
     </text>
@@ -464,11 +491,11 @@ const YesAndChipNode: React.FC<{
   cy: number;
   w: number;
   h: number;
+  fontSize: number;
   label: string;
   opacity: number;
   delay: number;
-}> = ({ anchorX, anchorY, cx, cy, w, h, label, opacity, delay }) => {
-  const fontSize = Math.max(9, h * 0.55);
+}> = ({ anchorX, anchorY, cx, cy, w, h, fontSize, label, opacity, delay }) => {
   return (
     <motion.g
       initial={{ opacity: 0, scale: 0.85 }}
@@ -476,18 +503,19 @@ const YesAndChipNode: React.FC<{
       transition={{ delay, duration: 0.4 }}
       style={{ transformOrigin: `${cx}px ${cy}px` }}
     >
-      {/* Connector */}
+      {/* Connector — drawn before the pill so the pill sits on top of it. */}
       <line
         x1={anchorX}
         y1={anchorY}
         x2={cx + (anchorX < cx ? -w / 2 : w / 2)}
         y2={cy}
         stroke="var(--color-danger)"
-        strokeOpacity={0.5}
-        strokeWidth={1}
+        strokeOpacity={0.55}
+        strokeWidth={1.1}
         strokeDasharray="2 3"
       />
-      {/* Pill */}
+      {/* Pill — solid bg-card so the spiral glow behind cannot bleed
+          through and obscure the label. Full opacity is intentional. */}
       <rect
         x={cx - w / 2}
         y={cy - h / 2}
@@ -496,21 +524,21 @@ const YesAndChipNode: React.FC<{
         rx={h / 2}
         ry={h / 2}
         fill="var(--color-bg-card)"
-        fillOpacity={0.95}
         stroke="var(--color-danger)"
-        strokeOpacity={0.75}
-        strokeWidth={1.4}
+        strokeOpacity={0.9}
+        strokeWidth={1.6}
       />
-      {/* Label */}
+      {/* Label — full-opacity danger text on the solid pill for maximum
+          contrast against the spiral glow zone. */}
       <text
         x={cx}
-        y={cy + fontSize * 0.34}
+        y={cy + fontSize * 0.36}
         textAnchor="middle"
         fill="var(--color-danger)"
-        fillOpacity={0.95}
         fontSize={fontSize}
         fontStyle="italic"
-        letterSpacing={0.4}
+        fontWeight={500}
+        letterSpacing={0.3}
       >
         {label}
       </text>
@@ -526,16 +554,18 @@ const YesAndChipNode: React.FC<{
 // a thin danger border to tie it visually to the spiral above (the spiral
 // is what produces this conclusion).
 const StarkConclusionPlate: React.FC = () => {
-  // Plate dimensions, tucked at the bottom of the slide.
+  // Plate dimensions — full-width and centered at the bottom of the canvas
+  // so the verbatim conclusion is the visual payoff of the lower half of
+  // the canvas (no longer empty).
   const plateX = 50;
-  const plateY = 510;
-  const plateW = 620;
-  const plateH = 78;
+  const plateY = 460;
+  const plateW = 900;
+  const plateH = 96;
   return (
     <motion.g
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 3.0, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ delay: 2.2, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
     >
       {/* Plate */}
       <rect
@@ -543,43 +573,43 @@ const StarkConclusionPlate: React.FC = () => {
         y={plateY}
         width={plateW}
         height={plateH}
-        rx={10}
+        rx={12}
         fill="var(--color-bg-card)"
         stroke="var(--color-danger)"
-        strokeOpacity={0.5}
-        strokeWidth={1.6}
+        strokeOpacity={0.7}
+        strokeWidth={2}
       />
       {/* Inner accent stripe on the left edge */}
       <rect
         x={plateX}
         y={plateY}
-        width={4}
+        width={5}
         height={plateH}
         rx={2}
         fill="var(--color-danger)"
-        fillOpacity={0.85}
+        fillOpacity={0.95}
       />
       {/* Stark conclusion text — VERBATIM per briefing.
           Two-line layout for legibility; first line stark and full-weight,
           second line a quieter beat-of-emphasis. */}
       <text
         x={plateX + plateW / 2}
-        y={plateY + 38}
+        y={plateY + 46}
         textAnchor="middle"
         fill="var(--color-text)"
-        fontSize={26}
-        fontWeight={600}
+        fontSize={27}
+        fontWeight={700}
         letterSpacing={0.4}
       >
         AI is useless without fundamentals or domain.
       </text>
       <text
         x={plateX + plateW / 2}
-        y={plateY + 64}
+        y={plateY + 76}
         textAnchor="middle"
         fill="var(--color-text-muted)"
-        fillOpacity={0.85}
-        fontSize={13}
+        fillOpacity={0.9}
+        fontSize={14}
         fontStyle="italic"
         letterSpacing={1.0}
       >
@@ -602,16 +632,19 @@ const StarkConclusionPlate: React.FC = () => {
 // Lives in its own positioned group (translated to the right of the stark
 // plate). Coordinates inside the group are MINI_VIEW_W x MINI_VIEW_H.
 const DeadEndsMiniature: React.FC = () => {
-  // Position the miniature group beside the stark plate.
-  const groupX = 690;
-  const groupY = 478;
+  // Position the miniature group beside the spiral (upper-right area of
+  // the canvas). With the spiral relocated upper-left and the stark plate
+  // running full-width along the bottom, the miniature lives in the
+  // upper-right column where there was previously dead space.
+  const groupX = 670;
+  const groupY = 200;
   // Header label above the miniature
   return (
     <motion.g
       transform={`translate(${groupX} ${groupY})`}
       initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 3.5, duration: 0.7 }}
+      transition={{ delay: 2.6, duration: 0.6 }}
     >
       {/* Frame card — subtle bg-card so the miniature reads as a discrete
           motif rather than overlapping the spiral. */}
@@ -674,7 +707,7 @@ const DeadEndsMiniature: React.FC = () => {
 
       {/* Dead-end branches — dashed danger, X-mark terminators */}
       {MINI_DEAD_ENDS.map((b, i) => {
-        const branchDelay = 3.7 + i * 0.08;
+        const branchDelay = 2.8 + i * 0.08;
         return (
           <g key={b.id}>
             {/* Curved branch from origin to node */}
@@ -751,7 +784,7 @@ const DeadEndsMiniature: React.FC = () => {
         filter="url(#mini-primary-glow)"
         initial={{ pathLength: 0, opacity: 0 }}
         animate={{ pathLength: 1, opacity: 0.78 }}
-        transition={{ delay: 4.15, duration: 0.55 }}
+        transition={{ delay: 3.25, duration: 0.5 }}
       />
       <motion.line
         x1={MINI_PURSUED_NODE.x}
@@ -765,7 +798,7 @@ const DeadEndsMiniature: React.FC = () => {
         strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0 }}
         animate={{ pathLength: 1, opacity: 0.55 }}
-        transition={{ delay: 4.55, duration: 0.4 }}
+        transition={{ delay: 3.6, duration: 0.4 }}
       />
       <motion.polygon
         points={`${MINI_PURSUED_TAIL.x - 8},${MINI_PURSUED_TAIL.y - 4} ${MINI_PURSUED_TAIL.x},${MINI_PURSUED_TAIL.y} ${MINI_PURSUED_TAIL.x - 8},${MINI_PURSUED_TAIL.y + 4}`}
@@ -773,13 +806,13 @@ const DeadEndsMiniature: React.FC = () => {
         fillOpacity={0.65}
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.65 }}
-        transition={{ delay: 4.85, duration: 0.3 }}
+        transition={{ delay: 3.9, duration: 0.3 }}
       />
       {/* Pursued node — small glowing primary ring */}
       <motion.g
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 4.45, duration: 0.4 }}
+        transition={{ delay: 3.5, duration: 0.4 }}
         style={{ transformOrigin: `${MINI_PURSUED_NODE.x}px ${MINI_PURSUED_NODE.y}px` }}
       >
         <circle
@@ -878,7 +911,7 @@ const MiniMagnifyingLens: React.FC<{
     <motion.g
       initial={{ opacity: 0, scale: 0.7 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 4.7, duration: 0.5 }}
+      transition={{ delay: 3.7, duration: 0.5 }}
       style={{ transformOrigin: `${cx}px ${cy}px` }}
     >
       {/* Lens glass */}

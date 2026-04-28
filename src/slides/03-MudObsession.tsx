@@ -301,16 +301,19 @@ const MudTerminal: React.FC = () => {
 // which glows in --color-primary -- this is "where the action is."
 const PathDiagram: React.FC = () => {
   // viewBox geometry (logical units)
-  // 0..1000 wide, 0..200 tall
-  const ENG = { x: 80, y: 100 };
-  const BIO = { x: 460, y: 100 };
-  const MUD = { x: 820, y: 70 };
-  const FORWARD = { x: 980, y: 130 }; // off-frame continuation tail
+  // 0..800 wide, 0..220 tall -- shrunk from 1000x200 so each viewBox unit
+  // maps to more pixels, making fonts/strokes render larger at the same
+  // numeric values. Round 2: more aggressive sizing pass.
+  const ENG = { x: 70, y: 110 };
+  const BIO = { x: 380, y: 110 };
+  const MUD = { x: 670, y: 75 };
+  const FORWARD = { x: 790, y: 145 }; // off-frame continuation tail
 
   return (
     <svg
-      viewBox="0 0 1000 200"
+      viewBox="0 0 800 220"
       className="w-full h-full"
+      preserveAspectRatio="xMidYMid meet"
       aria-label="Path: engineering (abandoned), pivot to biology, side obsession in MUDs/LPC"
     >
       <defs>
@@ -331,11 +334,11 @@ const PathDiagram: React.FC = () => {
         x2={BIO.x}
         y2={BIO.y}
         stroke="var(--color-text-muted)"
-        strokeWidth={1.5}
-        strokeOpacity={0.4}
-        strokeDasharray="6 6"
+        strokeWidth={5}
+        strokeOpacity={0.75}
+        strokeDasharray="12 10"
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.4 }}
+        animate={{ pathLength: 1, opacity: 0.75 }}
         transition={{ delay: 0.55, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
       />
 
@@ -347,23 +350,23 @@ const PathDiagram: React.FC = () => {
         x2={FORWARD.x}
         y2={FORWARD.y}
         stroke="var(--color-primary)"
-        strokeWidth={2}
-        strokeOpacity={0.55}
+        strokeWidth={6}
+        strokeOpacity={0.85}
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.55 }}
+        animate={{ pathLength: 1, opacity: 0.85 }}
         transition={{ delay: 0.85, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
       />
 
       {/* Biology -> MUDs side branch (solid, glowing primary -- the side
           obsession, "where the action is"). Curved upward to read as a fork. */}
       <motion.path
-        d={`M ${BIO.x} ${BIO.y} C ${BIO.x + 140} ${BIO.y}, ${MUD.x - 120} ${MUD.y}, ${MUD.x} ${MUD.y}`}
+        d={`M ${BIO.x} ${BIO.y} C ${BIO.x + 110} ${BIO.y}, ${MUD.x - 100} ${MUD.y}, ${MUD.x} ${MUD.y}`}
         fill="none"
         stroke="var(--color-primary)"
-        strokeWidth={2.2}
-        strokeOpacity={0.95}
+        strokeWidth={7}
+        strokeOpacity={1}
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.95 }}
+        animate={{ pathLength: 1, opacity: 1 }}
         transition={{ delay: 1.05, duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
         filter="url(#mud-node-glow)"
       />
@@ -377,22 +380,22 @@ const PathDiagram: React.FC = () => {
         <circle
           cx={ENG.x}
           cy={ENG.y}
-          r={9}
+          r={20}
           fill="var(--color-bg-card)"
           stroke="var(--color-text-muted)"
-          strokeOpacity={0.5}
-          strokeWidth={1.5}
-          strokeDasharray="3 3"
+          strokeOpacity={0.9}
+          strokeWidth={4}
+          strokeDasharray="6 5"
         />
         <text
           x={ENG.x}
-          y={ENG.y - 22}
-          fill="var(--color-text-muted)"
-          fillOpacity={0.65}
-          fontSize={15}
-          fontWeight={500}
+          y={ENG.y - 38}
+          fill="var(--color-text)"
+          fillOpacity={1}
+          fontSize={38}
+          fontWeight={700}
           textAnchor="middle"
-          letterSpacing={1}
+          letterSpacing={1.2}
         >
           Engineering
         </text>
@@ -408,20 +411,20 @@ const PathDiagram: React.FC = () => {
         <circle
           cx={BIO.x}
           cy={BIO.y}
-          r={11}
+          r={24}
           fill="var(--color-primary)"
-          fillOpacity={0.18}
+          fillOpacity={0.25}
           stroke="var(--color-primary)"
-          strokeWidth={2}
+          strokeWidth={5}
         />
         <text
           x={BIO.x}
-          y={BIO.y - 24}
+          y={BIO.y - 42}
           fill="var(--color-text)"
-          fontSize={16}
-          fontWeight={600}
+          fontSize={40}
+          fontWeight={800}
           textAnchor="middle"
-          letterSpacing={1}
+          letterSpacing={1.2}
         >
           Biology
         </text>
@@ -437,41 +440,41 @@ const PathDiagram: React.FC = () => {
         <circle
           cx={MUD.x}
           cy={MUD.y}
-          r={14}
+          r={28}
           fill="var(--color-primary)"
-          fillOpacity={0.28}
+          fillOpacity={0.35}
           stroke="var(--color-primary)"
-          strokeWidth={2.5}
+          strokeWidth={6}
           filter="url(#mud-node-glow)"
         />
         <circle
           cx={MUD.x}
           cy={MUD.y}
-          r={5}
+          r={11}
           fill="var(--color-primary)"
-          opacity={0.95}
+          opacity={1}
         />
         <text
           x={MUD.x}
-          y={MUD.y - 28}
+          y={MUD.y - 48}
           fill="var(--color-primary)"
-          fontSize={15}
-          fontWeight={700}
+          fontSize={40}
+          fontWeight={900}
           textAnchor="middle"
-          letterSpacing={1.5}
+          letterSpacing={1.8}
           filter="url(#mud-node-glow)"
         >
           MUDs / LPC
         </text>
         <text
           x={MUD.x}
-          y={MUD.y + 30}
-          fill="var(--color-text-muted)"
-          fontSize={11}
-          fontWeight={400}
+          y={MUD.y + 88}
+          fill="var(--color-primary)"
+          fillOpacity={1}
+          fontSize={28}
+          fontWeight={700}
           textAnchor="middle"
-          letterSpacing={1}
-          fontStyle="italic"
+          letterSpacing={1.2}
         >
           side obsession
         </text>
@@ -482,15 +485,15 @@ const PathDiagram: React.FC = () => {
           the slide proper. */}
       <motion.text
         x={(ENG.x + BIO.x) / 2}
-        y={ENG.y - 18}
-        fill="var(--color-text-muted)"
-        fillOpacity={0.55}
-        fontSize={11}
-        fontStyle="italic"
+        y={ENG.y - 60}
+        fill="var(--color-text)"
+        fillOpacity={1}
+        fontSize={32}
+        fontWeight={700}
         textAnchor="middle"
-        letterSpacing={1}
+        letterSpacing={1.2}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.55 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: 1.1, duration: 0.5 }}
       >
         pivot
@@ -528,10 +531,13 @@ const MudObsession: React.FC<SlideProps> = () => {
           The Side Obsession
         </SlideTitle>
 
-        {/* Path diagram: thin horizontal strip just below the title.
-            Establishes the branching-path motif that slides 04-07 will reuse. */}
+        {/* Path diagram: horizontal strip just below the title.
+            Establishes the branching-path motif that slides 04-07 will reuse.
+            Round 2: stretched to full container width and given more vertical
+            space so labels and node markers no longer feel under-weighted
+            against the large terminal hero below. */}
         <motion.div
-          className="w-full max-w-[80vw] h-[12vh]"
+          className="w-full h-[21vh]"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}

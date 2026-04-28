@@ -51,17 +51,17 @@ import type { SlideProps } from '../types';
 // branches downward.
 
 const VB_W = 1200;
-const VB_H = 520;
+const VB_H = 820;
 
 // Left side — VAGUE query, chaotic tree
-const LEFT_QUERY = { x: 50, y: 30, w: 500, h: 56 };
-const LEFT_ROOT = { x: 300, y: 110 }; // bottom-center of the query box
-const LEFT_TERMINUS = { x: 300, y: 470 }; // confusion marker
+const LEFT_QUERY = { x: 50, y: 30, w: 500, h: 64 };
+const LEFT_ROOT = { x: 300, y: 122 }; // bottom-center of the query box
+const LEFT_TERMINUS = { x: 300, y: 740 }; // confusion marker
 
 // Right side — PRECISE query, focused tree
-const RIGHT_QUERY = { x: 650, y: 30, w: 500, h: 56 };
-const RIGHT_ROOT = { x: 900, y: 110 };
-const RIGHT_ANSWER = { x: 900, y: 470 }; // converged-answer marker
+const RIGHT_QUERY = { x: 650, y: 30, w: 500, h: 64 };
+const RIGHT_ROOT = { x: 900, y: 122 };
+const RIGHT_ANSWER = { x: 900, y: 740 }; // converged-answer marker
 
 // Branch definitions for the chaotic LEFT tree. Lots of nodes, scattered,
 // some terminate as fade-outs (dead drift) and some as dead-end X-marks
@@ -82,25 +82,25 @@ type ChaoticNode = {
 // -1 means "child of LEFT_ROOT" (the query box's bottom).
 const CHAOTIC_NODES: ChaoticNode[] = [
   // First-level scatter
-  { id: 'l-1',  x: 130, y: 200, parent: -1, terminator: null },
-  { id: 'l-2',  x: 235, y: 195, parent: -1, terminator: null },
-  { id: 'l-3',  x: 360, y: 200, parent: -1, terminator: null },
-  { id: 'l-4',  x: 470, y: 200, parent: -1, terminator: null },
+  { id: 'l-1',  x: 130, y: 260, parent: -1, terminator: null },
+  { id: 'l-2',  x: 235, y: 252, parent: -1, terminator: null },
+  { id: 'l-3',  x: 360, y: 260, parent: -1, terminator: null },
+  { id: 'l-4',  x: 470, y: 260, parent: -1, terminator: null },
   // Second-level chaos
-  { id: 'l-5',  x: 75,  y: 290, parent: 0,  terminator: 'fade' },
-  { id: 'l-6',  x: 175, y: 305, parent: 0,  terminator: 'x' },
-  { id: 'l-7',  x: 215, y: 295, parent: 1,  terminator: null },
-  { id: 'l-8',  x: 305, y: 305, parent: 2,  terminator: 'x' },
-  { id: 'l-9',  x: 395, y: 290, parent: 2,  terminator: null },
-  { id: 'l-10', x: 510, y: 305, parent: 3,  terminator: 'fade' },
+  { id: 'l-5',  x: 75,  y: 420, parent: 0,  terminator: 'fade' },
+  { id: 'l-6',  x: 175, y: 445, parent: 0,  terminator: 'x' },
+  { id: 'l-7',  x: 215, y: 425, parent: 1,  terminator: null },
+  { id: 'l-8',  x: 305, y: 445, parent: 2,  terminator: 'x' },
+  { id: 'l-9',  x: 395, y: 420, parent: 2,  terminator: null },
+  { id: 'l-10', x: 510, y: 445, parent: 3,  terminator: 'fade' },
   // Third-level deeper sprawl from a couple of the level-2 nodes
-  { id: 'l-11', x: 175, y: 395, parent: 6,  terminator: 'x' },
-  { id: 'l-12', x: 250, y: 405, parent: 6,  terminator: 'fade' },
-  { id: 'l-13', x: 395, y: 395, parent: 8,  terminator: 'x' },
-  { id: 'l-14', x: 470, y: 405, parent: 8,  terminator: 'fade' },
+  { id: 'l-11', x: 175, y: 595, parent: 6,  terminator: 'x' },
+  { id: 'l-12', x: 250, y: 612, parent: 6,  terminator: 'fade' },
+  { id: 'l-13', x: 395, y: 595, parent: 8,  terminator: 'x' },
+  { id: 'l-14', x: 470, y: 612, parent: 8,  terminator: 'fade' },
   // Central confusion terminus — convergence on "??" (the result of the
   // chaotic walk). Reached via the middle-back node l-3 -> central spine.
-  { id: 'l-15', x: 300, y: 380, parent: 2,  terminator: null },
+  { id: 'l-15', x: 300, y: 580, parent: 2,  terminator: null },
 ];
 
 // Branch definitions for the FOCUSED RIGHT tree. Few well-placed nodes,
@@ -119,14 +119,16 @@ type FocusedNode = {
 
 const FOCUSED_NODES: FocusedNode[] = [
   // Three intentional first-level branches — narrow the search.
-  { id: 'r-1', x: 760, y: 215, parent: -1, label: 'right method' },
-  { id: 'r-2', x: 900, y: 215, parent: -1, label: 'assumptions' },
-  { id: 'r-3', x: 1040, y: 215, parent: -1, label: 'caveats' },
+  // Spread evenly so the right tree fills the vertical band even
+  // though it stays intentionally sparse compared to the chaotic side.
+  { id: 'r-1', x: 760, y: 290, parent: -1, label: 'right method' },
+  { id: 'r-2', x: 900, y: 290, parent: -1, label: 'assumptions' },
+  { id: 'r-3', x: 1040, y: 290, parent: -1, label: 'caveats' },
   // Each merges back toward the spine — the convergence is the visual
-  // payoff. The three nodes at y=325 are slightly inboard of their parents.
-  { id: 'r-4', x: 820, y: 325, parent: 0 },
-  { id: 'r-5', x: 900, y: 325, parent: 1 },
-  { id: 'r-6', x: 980, y: 325, parent: 2 },
+  // payoff. The three nodes are slightly inboard of their parents.
+  { id: 'r-4', x: 820, y: 540, parent: 0 },
+  { id: 'r-5', x: 900, y: 540, parent: 1 },
+  { id: 'r-6', x: 980, y: 540, parent: 2 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -136,7 +138,7 @@ const FOCUSED_NODES: FocusedNode[] = [
 const GoogleAnalogy: React.FC<SlideProps> = () => {
   return (
     <SlideContainer>
-      <div className="w-full max-w-[94vw] h-full flex flex-col items-center justify-start gap-2">
+      <div className="w-full max-w-[94vw] h-full flex flex-col items-center justify-between gap-1 pb-2">
         <SlideTitle subtitle="AI amplifies this gap.">
           The Google Analogy
         </SlideTitle>
@@ -169,9 +171,12 @@ const GoogleAnalogy: React.FC<SlideProps> = () => {
           </blockquote>
         </motion.div>
 
-        {/* The two-tree diagram. */}
+        {/* The two-tree diagram. Flex-1 lets the diagram grow to absorb
+            whatever vertical room remains between the quote and the
+            tagline — prevents leftover empty space at the bottom of the
+            1920x1080 canvas. */}
         <motion.div
-          className="w-full max-w-[92vw] h-[52vh] mt-1"
+          className="w-full max-w-[92vw] flex-1 min-h-0 flex items-stretch justify-center"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.85, duration: 0.65 }}
@@ -312,16 +317,16 @@ const TwoTreeDiagram: React.FC = () => {
         // "wandering" rather than straight pipes. Control points pull
         // sideways relative to the segment.
         const mx = (parent.x + n.x) / 2;
-        const c1 = { x: parent.x, y: mx - parent.x > 0 ? parent.y + 30 : parent.y + 22 };
-        const c2 = { x: n.x, y: n.y - 28 };
+        const c1 = { x: parent.x, y: mx - parent.x > 0 ? parent.y + 45 : parent.y + 35 };
+        const c2 = { x: n.x, y: n.y - 42 };
         return (
           <motion.path
             key={`l-edge-${n.id}`}
             d={`M ${parent.x} ${parent.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${n.x} ${n.y}`}
             fill="none"
             stroke="url(#ga-chaotic-fade)"
-            strokeWidth={1.6}
-            strokeDasharray="6 6"
+            strokeWidth={3}
+            strokeDasharray="8 7"
             strokeLinecap="round"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 1 }}
@@ -337,8 +342,8 @@ const TwoTreeDiagram: React.FC = () => {
         return (
           <g key={`l-node-${n.id}`}>
             <ChaoticNodeMark cx={n.x} cy={n.y} delay={nodeDelay} />
-            {n.terminator === 'x' && <DeadEndX cx={n.x} cy={n.y + 22} delay={termDelay} />}
-            {n.terminator === 'fade' && <FadeOutTip cx={n.x} cy={n.y + 22} delay={termDelay} />}
+            {n.terminator === 'x' && <DeadEndX cx={n.x} cy={n.y + 28} delay={termDelay} />}
+            {n.terminator === 'fade' && <FadeOutTip cx={n.x} cy={n.y + 28} delay={termDelay} />}
           </g>
         );
       })}
@@ -346,45 +351,61 @@ const TwoTreeDiagram: React.FC = () => {
       {/* Spine into central confusion: faint dashed lane from the bottom
           of the inner level-3 node into the confusion terminus. */}
       <motion.path
-        d={`M ${CHAOTIC_NODES[14].x} ${CHAOTIC_NODES[14].y} C ${CHAOTIC_NODES[14].x - 18} ${CHAOTIC_NODES[14].y + 30}, ${LEFT_TERMINUS.x + 18} ${LEFT_TERMINUS.y - 30}, ${LEFT_TERMINUS.x} ${LEFT_TERMINUS.y - 8}`}
+        d={`M ${CHAOTIC_NODES[14].x} ${CHAOTIC_NODES[14].y} C ${CHAOTIC_NODES[14].x - 18} ${CHAOTIC_NODES[14].y + 50}, ${LEFT_TERMINUS.x + 18} ${LEFT_TERMINUS.y - 50}, ${LEFT_TERMINUS.x} ${LEFT_TERMINUS.y - 12}`}
         fill="none"
         stroke="url(#ga-chaotic-fade)"
-        strokeWidth={1.6}
-        strokeDasharray="4 6"
+        strokeWidth={3}
+        strokeDasharray="6 7"
         strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0 }}
         animate={{ pathLength: 1, opacity: 0.85 }}
         transition={{ delay: 1.55, duration: 0.55 }}
       />
 
-      {/* Confusion terminus — the resolution of the chaotic walk: ?? */}
+      {/* Confusion terminus — the resolution of the chaotic walk: ??
+          Bumped contrast: solid danger fill behind the glyph and a
+          near-white "??" so it reads cleanly against the dark slide bg.
+          Outer dashed ring keeps the dead-end grammar from slide 19. */}
       <motion.g
         initial={{ opacity: 0, scale: 0.7 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 1.95, duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
         style={{ transformOrigin: `${LEFT_TERMINUS.x}px ${LEFT_TERMINUS.y}px` }}
       >
+        {/* Outer dashed danger ring — preserves dead-end grammar. */}
         <circle
           cx={LEFT_TERMINUS.x}
           cy={LEFT_TERMINUS.y}
-          r={26}
-          fill="var(--color-danger)"
-          fillOpacity={0.12}
+          r={42}
+          fill="none"
           stroke="var(--color-danger)"
-          strokeOpacity={0.7}
-          strokeWidth={2}
-          strokeDasharray="3 3"
+          strokeOpacity={0.85}
+          strokeWidth={3.4}
+          strokeDasharray="5 5"
           filter="url(#ga-danger-glow)"
+        />
+        {/* Solid inner danger disk — provides high-contrast backing
+            so the "??" glyph is unambiguously legible. */}
+        <circle
+          cx={LEFT_TERMINUS.x}
+          cy={LEFT_TERMINUS.y}
+          r={32}
+          fill="var(--color-danger)"
+          fillOpacity={0.95}
+          stroke="var(--color-danger)"
+          strokeOpacity={1}
+          strokeWidth={1}
         />
         <text
           x={LEFT_TERMINUS.x}
-          y={LEFT_TERMINUS.y + 7}
+          y={LEFT_TERMINUS.y + 10}
           textAnchor="middle"
-          fill="var(--color-danger)"
-          fillOpacity={0.95}
-          fontSize={22}
-          fontWeight={700}
+          fill="var(--color-text)"
+          fillOpacity={1}
+          fontSize={30}
+          fontWeight={900}
           fontFamily="ui-sans-serif, system-ui, sans-serif"
+          letterSpacing={1}
         >
           ??
         </text>
@@ -393,15 +414,15 @@ const TwoTreeDiagram: React.FC = () => {
       {/* Caption beneath the chaotic side — frames the outcome in one word. */}
       <motion.text
         x={LEFT_TERMINUS.x}
-        y={LEFT_TERMINUS.y + 50}
+        y={LEFT_TERMINUS.y + 72}
         textAnchor="middle"
         fill="var(--color-text-muted)"
-        fillOpacity={0.85}
-        fontSize={16}
+        fillOpacity={1}
+        fontSize={20}
         fontStyle="italic"
-        letterSpacing={1.5}
+        letterSpacing={2}
         initial={{ opacity: 0, y: -4 }}
-        animate={{ opacity: 0.85, y: 0 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.25, duration: 0.55 }}
       >
         confusion
@@ -431,11 +452,11 @@ const TwoTreeDiagram: React.FC = () => {
         return (
           <motion.path
             key={`r-edge-${n.id}`}
-            d={`M ${parent.x} ${parent.y} C ${parent.x} ${parent.y + 35}, ${n.x} ${n.y - 35}, ${n.x} ${n.y}`}
+            d={`M ${parent.x} ${parent.y} C ${parent.x} ${parent.y + 60}, ${n.x} ${n.y - 60}, ${n.x} ${n.y}`}
             fill="none"
             stroke="var(--color-success)"
-            strokeOpacity={0.85}
-            strokeWidth={2.2}
+            strokeOpacity={0.9}
+            strokeWidth={3.6}
             strokeLinecap="round"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 0.85 }}
@@ -445,7 +466,35 @@ const TwoTreeDiagram: React.FC = () => {
         );
       })}
 
-      {/* Focused-side nodes + terse labels */}
+      {/* Convergence: each of the three lower nodes feeds into the
+          single answer terminus. Solid, glowing — three streams becoming
+          one is the visual punchline. Drawn BEFORE the second-level node
+          marks so each branch's terminator ring sits cleanly on top of
+          the convergence origin (no half-overdrawn ring). */}
+      {[3, 4, 5].map((idx, i) => {
+        const n = FOCUSED_NODES[idx];
+        const delay = 2.05 + i * 0.1;
+        return (
+          <motion.path
+            key={`r-converge-${n.id}`}
+            d={`M ${n.x} ${n.y} C ${n.x} ${n.y + 80}, ${RIGHT_ANSWER.x} ${RIGHT_ANSWER.y - 90}, ${RIGHT_ANSWER.x} ${RIGHT_ANSWER.y - 32}`}
+            fill="none"
+            stroke="var(--color-success)"
+            strokeOpacity={0.9}
+            strokeWidth={3.6}
+            strokeLinecap="round"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 0.85 }}
+            transition={{ delay, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            filter="url(#ga-success-glow)"
+          />
+        );
+      })}
+
+      {/* Focused-side nodes + terse labels. Drawn AFTER convergence so
+          each branch terminates at a clean, fully-visible focused node
+          (matches the left-tree grammar of having a clear terminal mark
+          on every branch — no dangling stubs). */}
       {FOCUSED_NODES.map((n, i) => {
         const nodeDelay = 1.35 + i * 0.15;
         return (
@@ -454,43 +503,21 @@ const TwoTreeDiagram: React.FC = () => {
             {n.label && (
               <motion.text
                 x={n.x}
-                y={n.y + 28}
+                y={n.y + 38}
                 textAnchor="middle"
-                fill="var(--color-text-muted)"
-                fillOpacity={0.85}
-                fontSize={13}
-                letterSpacing={0.5}
+                fill="var(--color-text)"
+                fillOpacity={1}
+                fontSize={18}
+                fontWeight={500}
+                letterSpacing={0.8}
                 initial={{ opacity: 0, y: -3 }}
-                animate={{ opacity: 0.85, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: nodeDelay + 0.2, duration: 0.45 }}
               >
                 {n.label}
               </motion.text>
             )}
           </g>
-        );
-      })}
-
-      {/* Convergence: each of the three lower nodes feeds into the
-          single answer terminus. Solid, glowing — three streams becoming
-          one is the visual punchline. */}
-      {[3, 4, 5].map((idx, i) => {
-        const n = FOCUSED_NODES[idx];
-        const delay = 2.05 + i * 0.1;
-        return (
-          <motion.path
-            key={`r-converge-${n.id}`}
-            d={`M ${n.x} ${n.y} C ${n.x} ${n.y + 50}, ${RIGHT_ANSWER.x} ${RIGHT_ANSWER.y - 60}, ${RIGHT_ANSWER.x} ${RIGHT_ANSWER.y - 24}`}
-            fill="none"
-            stroke="var(--color-success)"
-            strokeOpacity={0.85}
-            strokeWidth={2.2}
-            strokeLinecap="round"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 0.85 }}
-            transition={{ delay, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-            filter="url(#ga-success-glow)"
-          />
         );
       })}
 
@@ -505,22 +532,22 @@ const TwoTreeDiagram: React.FC = () => {
         <circle
           cx={RIGHT_ANSWER.x}
           cy={RIGHT_ANSWER.y}
-          r={26}
+          r={34}
           fill="var(--color-success)"
-          fillOpacity={0.18}
+          fillOpacity={0.2}
           stroke="var(--color-success)"
-          strokeOpacity={0.95}
-          strokeWidth={2.4}
+          strokeOpacity={1}
+          strokeWidth={3.2}
           filter="url(#ga-success-glow)"
         />
         {/* Check mark: two short lines forming a tick. Centered in the
             success node. */}
         <polyline
-          points={`${RIGHT_ANSWER.x - 11},${RIGHT_ANSWER.y + 1} ${RIGHT_ANSWER.x - 3},${RIGHT_ANSWER.y + 9} ${RIGHT_ANSWER.x + 12},${RIGHT_ANSWER.y - 7}`}
+          points={`${RIGHT_ANSWER.x - 14},${RIGHT_ANSWER.y + 2} ${RIGHT_ANSWER.x - 4},${RIGHT_ANSWER.y + 12} ${RIGHT_ANSWER.x + 16},${RIGHT_ANSWER.y - 9}`}
           fill="none"
           stroke="var(--color-success)"
-          strokeOpacity={0.95}
-          strokeWidth={3}
+          strokeOpacity={1}
+          strokeWidth={4}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -529,51 +556,84 @@ const TwoTreeDiagram: React.FC = () => {
       {/* Caption beneath the focused side. */}
       <motion.text
         x={RIGHT_ANSWER.x}
-        y={RIGHT_ANSWER.y + 50}
+        y={RIGHT_ANSWER.y + 72}
         textAnchor="middle"
         fill="var(--color-text-muted)"
-        fillOpacity={0.85}
-        fontSize={16}
+        fillOpacity={1}
+        fontSize={20}
         fontStyle="italic"
-        letterSpacing={1.5}
+        letterSpacing={2}
         initial={{ opacity: 0, y: -4 }}
-        animate={{ opacity: 0.85, y: 0 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.75, duration: 0.55 }}
       >
         useful answer
       </motion.text>
 
-      {/* Side annotations above each tree — terse framing labels. */}
-      <motion.text
-        x={LEFT_ROOT.x}
-        y={158}
-        textAnchor="middle"
-        fill="var(--color-danger)"
-        fillOpacity={0.75}
-        fontSize={12}
-        letterSpacing={2.5}
-        fontWeight={600}
+      {/* Side annotations above each tree — terse framing labels.
+          Positioned in the gap between the query box (bottom y≈94) and the
+          first branching (y≈245/270), with a small backing pill so tree
+          branches passing nearby don't make the labels illegible. */}
+      <motion.g
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.75 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: 0.7, duration: 0.5 }}
       >
-        VAGUE QUERY
-      </motion.text>
-      <motion.text
-        x={RIGHT_ROOT.x}
-        y={158}
-        textAnchor="middle"
-        fill="var(--color-success)"
-        fillOpacity={0.85}
-        fontSize={12}
-        letterSpacing={2.5}
-        fontWeight={600}
+        <rect
+          x={LEFT_ROOT.x - 95}
+          y={155}
+          width={190}
+          height={32}
+          rx={16}
+          fill="var(--color-bg)"
+          fillOpacity={0.92}
+          stroke="var(--color-danger)"
+          strokeOpacity={0.55}
+          strokeWidth={1.4}
+        />
+        <text
+          x={LEFT_ROOT.x}
+          y={176}
+          textAnchor="middle"
+          fill="var(--color-danger)"
+          fillOpacity={1}
+          fontSize={18}
+          letterSpacing={3}
+          fontWeight={700}
+        >
+          VAGUE QUERY
+        </text>
+      </motion.g>
+      <motion.g
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.85 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: 0.7, duration: 0.5 }}
       >
-        PRECISE QUERY
-      </motion.text>
+        <rect
+          x={RIGHT_ROOT.x - 105}
+          y={155}
+          width={210}
+          height={32}
+          rx={16}
+          fill="var(--color-bg)"
+          fillOpacity={0.92}
+          stroke="var(--color-success)"
+          strokeOpacity={0.6}
+          strokeWidth={1.4}
+        />
+        <text
+          x={RIGHT_ROOT.x}
+          y={176}
+          textAnchor="middle"
+          fill="var(--color-success)"
+          fillOpacity={1}
+          fontSize={18}
+          letterSpacing={3}
+          fontWeight={700}
+        >
+          PRECISE QUERY
+        </text>
+      </motion.g>
     </svg>
   );
 };
@@ -608,37 +668,37 @@ const QueryBox: React.FC<{
         rx={h / 2}
         fill="var(--color-bg-card)"
         stroke={accent}
-        strokeOpacity={0.55}
-        strokeWidth={1.6}
+        strokeOpacity={0.7}
+        strokeWidth={2.2}
       />
       {/* Tiny "search" indicator on the leading edge — a small open ring,
           evocative of a magnifying glass without taking the lens motif from
           slide 19. */}
       <circle
-        cx={x + 24}
+        cx={x + 26}
         cy={y + h / 2}
-        r={6}
+        r={7}
         fill="none"
         stroke={accent}
-        strokeOpacity={0.7}
-        strokeWidth={1.6}
+        strokeOpacity={0.85}
+        strokeWidth={2}
       />
       <line
-        x1={x + 28}
-        y1={y + h / 2 + 4}
-        x2={x + 33}
-        y2={y + h / 2 + 9}
+        x1={x + 31}
+        y1={y + h / 2 + 5}
+        x2={x + 37}
+        y2={y + h / 2 + 11}
         stroke={accent}
-        strokeOpacity={0.7}
-        strokeWidth={1.6}
+        strokeOpacity={0.85}
+        strokeWidth={2}
         strokeLinecap="round"
       />
       <text
-        x={x + 46}
-        y={y + h / 2 + 5}
+        x={x + 50}
+        y={y + h / 2 + 6}
         fill="var(--color-text)"
-        fillOpacity={0.92}
-        fontSize={16}
+        fillOpacity={1}
+        fontSize={19}
         fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
         letterSpacing={0.3}
       >
@@ -668,19 +728,19 @@ const ChaoticNodeMark: React.FC<{ cx: number; cy: number; delay: number }> = ({
     <circle
       cx={cx}
       cy={cy}
-      r={7}
+      r={10}
       fill="var(--color-bg-card)"
       stroke="var(--color-danger)"
-      strokeOpacity={0.55}
-      strokeWidth={1.4}
-      strokeDasharray="3 3"
+      strokeOpacity={0.75}
+      strokeWidth={2.2}
+      strokeDasharray="4 3"
     />
     <circle
       cx={cx}
       cy={cy}
-      r={1.8}
+      r={2.6}
       fill="var(--color-text-muted)"
-      fillOpacity={0.6}
+      fillOpacity={0.75}
     />
   </motion.g>
 );
@@ -705,20 +765,20 @@ const FocusedNodeMark: React.FC<{ cx: number; cy: number; delay: number }> = ({
     <circle
       cx={cx}
       cy={cy}
-      r={11}
+      r={15}
       fill="var(--color-success)"
-      fillOpacity={0.18}
+      fillOpacity={0.2}
       stroke="var(--color-success)"
-      strokeOpacity={0.9}
-      strokeWidth={2}
+      strokeOpacity={1}
+      strokeWidth={3}
       filter="url(#ga-success-glow)"
     />
     <circle
       cx={cx}
       cy={cy}
-      r={3}
+      r={4.2}
       fill="var(--color-success)"
-      fillOpacity={0.95}
+      fillOpacity={1}
     />
   </motion.g>
 );
@@ -731,7 +791,7 @@ const DeadEndX: React.FC<{ cx: number; cy: number; delay: number }> = ({
   cy,
   delay,
 }) => {
-  const r = 5;
+  const r = 7;
   return (
     <motion.g
       initial={{ opacity: 0, scale: 0.6 }}
@@ -745,8 +805,8 @@ const DeadEndX: React.FC<{ cx: number; cy: number; delay: number }> = ({
         x2={cx + r}
         y2={cy + r}
         stroke="var(--color-danger)"
-        strokeOpacity={0.7}
-        strokeWidth={1.8}
+        strokeOpacity={0.85}
+        strokeWidth={2.8}
         strokeLinecap="round"
       />
       <line
@@ -755,8 +815,8 @@ const DeadEndX: React.FC<{ cx: number; cy: number; delay: number }> = ({
         x2={cx + r}
         y2={cy - r}
         stroke="var(--color-danger)"
-        strokeOpacity={0.7}
-        strokeWidth={1.8}
+        strokeOpacity={0.85}
+        strokeWidth={2.8}
         strokeLinecap="round"
       />
     </motion.g>
@@ -779,19 +839,19 @@ const FadeOutTip: React.FC<{ cx: number; cy: number; delay: number }> = ({
     <circle
       cx={cx}
       cy={cy}
-      r={3.5}
+      r={5}
       fill="none"
       stroke="var(--color-text-muted)"
-      strokeOpacity={0.4}
-      strokeWidth={1}
-      strokeDasharray="2 3"
+      strokeOpacity={0.55}
+      strokeWidth={1.6}
+      strokeDasharray="3 3"
     />
     <circle
       cx={cx}
       cy={cy}
-      r={1.2}
+      r={1.8}
       fill="var(--color-text-muted)"
-      fillOpacity={0.45}
+      fillOpacity={0.6}
     />
   </motion.g>
 );
