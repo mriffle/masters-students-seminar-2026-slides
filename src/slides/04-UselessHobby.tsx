@@ -580,7 +580,7 @@ const GapTimeline: React.FC = () => {
     <svg
       viewBox="0 0 1000 160"
       className="w-full h-full"
-      aria-label="Timeline: speaker's chat rooms came years before Friendster (2002), MySpace (2003), Facebook (2004)."
+      aria-label="Timeline: Our chat rooms came years before Friendster (2002), MySpace (2003), Facebook (2004)."
     >
       <defs>
         <filter id="timeline-glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -680,7 +680,7 @@ const GapTimeline: React.FC = () => {
           letterSpacing={1.2}
           filter="url(#timeline-glow)"
         >
-          speaker's chat rooms
+          our chat rooms
         </text>
         <text
           x={SPEAKER_X}

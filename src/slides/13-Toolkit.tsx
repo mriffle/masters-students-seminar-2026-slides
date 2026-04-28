@@ -121,6 +121,7 @@ const STABLE_TOOLS: StableTool[] = [
   { name: 'VS Code', role: 'Primary IDE - Jupyter native, no Anaconda.' },
   { name: 'Obsidian', role: 'Notes and knowledge management.' },
   { name: 'Slack', role: 'Collaboration.' },
+  { name: 'git', role: 'Collaboration, version control, documentation, sharing code.' },
 ];
 
 const StableColumn: React.FC = () => {

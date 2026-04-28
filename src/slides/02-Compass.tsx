@@ -278,7 +278,7 @@ const Compass: React.FC<SlideProps> = () => {
               &ldquo;
             </span>
             Something being{' '}
-            <span style={{ color: 'var(--color-primary)' }}>interesting</span> is{' '}
+            <span style={{ color: 'var(--color-primary)' }}>interesting</span> has been{' '}
             <span style={{ color: 'var(--color-primary)', fontStyle: 'italic' }}>
               THE
             </span>{' '}

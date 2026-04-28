@@ -276,7 +276,7 @@ const SecondaryRow: React.FC = () => {
           opacity: 1,
         }}
       >
-        things I didn&rsquo;t know to value at your age
+        other things I valued at the time
       </div>
 
       <div className="grid grid-cols-3 gap-[1.2vw]">

@@ -274,14 +274,14 @@ const IntersectionDiagram: React.FC = () => {
         cx={BIO.x}
         cy={BIO.y}
         label="Biology"
-        sublabel="the speaker's past"
+        sublabel="BS degree, interest"
         delay={0.35}
       />
       <SpeakerOriginNode
         cx={DBWEB.x}
         cy={DBWEB.y}
         label="Database / Web Consulting"
-        sublabel="the speaker's past"
+        sublabel="hands on expertise"
         delay={0.55}
       />
       <DirectiveOriginNode
